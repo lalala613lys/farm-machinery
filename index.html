@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>农机补贴政务后台管理系统</title>
+<style>
+/* ========== Reset & Base ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#165DFF;
+  --primary-light:#E8F0FF;
+  --primary-hover:#0E4BD9;
+  --success:#00B42A;
+  --success-bg:#E8FFEA;
+  --warning:#FF7D00;
+  --warning-bg:#FFF7E8;
+  --danger:#F53F3F;
+  --danger-bg:#FFECE8;
+  --text-primary:#1D2129;
+  --text-secondary:#4E5969;
+  --text-tertiary:#86909C;
+  --border:#E5E6EB;
+  --bg-page:#F2F3F5;
+  --bg-white:#FFFFFF;
+  --radius:4px;
+  --shadow:0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.12);
+  --sidebar-w:220px;
+  --topnav-h:56px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;color:var(--text-primary);background:var(--bg-page);min-height:100vh}
+
+/* ========== Top Navigation ========== */
+.top-nav{position:fixed;top:0;left:0;right:0;height:var(--topnav-h);background:var(--bg-white);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.top-nav .logo-area{display:flex;align-items:center;gap:12px}
+.top-nav .logo-icon{width:32px;height:32px;background:var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700}
+.top-nav .logo-text{font-size:16px;font-weight:600;color:var(--text-primary);letter-spacing:0.5px}
+.top-nav .user-area{display:flex;align-items:center;gap:16px;font-size:13px;color:var(--text-secondary)}
+.top-nav .avatar{width:36px;height:36px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+
+/* ========== Sidebar ========== */
+.sidebar{position:fixed;top:var(--topnav-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--bg-white);border-right:1px solid var(--border);overflow-y:auto;z-index:90;padding:8px 0}
+.sidebar .menu-group{margin-bottom:4px}
+.sidebar .menu-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--text-secondary);font-size:14px;transition:all 0.15s;position:relative;user-select:none}
+.sidebar .menu-item:hover{background:var(--bg-page);color:var(--text-primary)}
+.sidebar .menu-item.active{color:var(--primary);background:var(--primary-light);font-weight:500}
+.sidebar .menu-item .icon{width:18px;text-align:center;font-size:15px;flex-shrink:0}
+.sidebar .menu-item .arrow{margin-left:auto;font-size:12px;transition:transform 0.2s}
+.sidebar .menu-item.expanded .arrow{transform:rotate(90deg)}
+.sidebar .sub-menu{overflow:hidden;max-height:0;transition:max-height 0.25s ease}
+.sidebar .sub-menu.open{max-height:200px}
+.sidebar .sub-menu .menu-item{padding-left:48px;font-size:13px}
+.sidebar .sub-menu .menu-item.active{color:var(--primary);background:var(--primary-light);font-weight:500}
+.sidebar .menu-divider{height:1px;background:var(--border);margin:8px 16px}
+
+/* ========== Main Content ========== */
+.main-content{margin-left:var(--sidebar-w);margin-top:var(--topnav-h);padding:20px 24px;min-height:calc(100vh - var(--topnav-h))}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:16px}
+.page-header .breadcrumb{font-size:12px;color:var(--text-tertiary);margin-bottom:4px}
+.page-header .breadcrumb span{color:var(--text-secondary)}
+.page-header h2{font-size:20px;font-weight:600}
+
+/* ========== Stats Row ========== */
+.stats-row{display:flex;gap:16px;margin-bottom:16px}
+.stat-card{flex:1;background:var(--bg-white);border-radius:8px;border:1px solid var(--border);padding:20px 24px;text-align:left;transition:box-shadow 0.15s}
+.stat-card.clickable{cursor:pointer}
+.stat-card.clickable:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08);border-color:var(--primary)}
+.stat-card .stat-title{font-size:13px;color:var(--text-tertiary);margin-bottom:8px}
+.stat-card .stat-number{font-size:20px;font-weight:700;color:var(--text-primary);line-height:1.2}
+.stat-card .stat-number.green{color:var(--success)}
+.stat-card .stat-number.red{color:var(--danger)}
+.stat-card .stat-number.orange{color:var(--warning)}
+.stat-card .stat-number.blue{color:var(--primary)}
+.stat-card .stat-sub{font-size:12px;color:var(--text-tertiary);margin-top:6px}
+
+/* ========== Card ========== */
+.card{background:var(--bg-white);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:15px;font-weight:600}
+.card-body{padding:20px}
+
+/* ========== Section Card (Dealer Info Panels) ========== */
+.section-card{background:var(--bg-white);border-radius:8px;border:1px solid var(--border);margin-bottom:16px;overflow:hidden}
+.section-card .section-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.section-card .section-header .section-icon{font-size:18px}
+.section-card .section-header h3{font-size:15px;font-weight:600;color:var(--text-primary)}
+.section-card .section-body{padding:20px}
+
+/* Tier Cards Row */
+.tier-row{display:flex;gap:16px}
+.tier-card{flex:1;border-radius:8px;border:1px solid;padding:20px;display:flex;gap:14px;align-items:flex-start}
+.tier-card .tier-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.tier-card .tier-info{flex:1;min-width:0}
+.tier-card .tier-name{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:8px}
+.tier-card .tier-detail{font-size:12px;color:var(--text-secondary);line-height:1.8}
+.tier-card .tier-detail .label{color:var(--text-tertiary)}
+/* Tier color variants */
+.tier-card.purple{background:#F7F4FC;border-color:#E0D4F5}
+.tier-card.purple .tier-icon{background:#EDE4F8;color:#7C3AED}
+.tier-card.blue{background:#F0F6FF;border-color:#D0E2FF}
+.tier-card.blue .tier-icon{background:#DEE9FC;color:var(--primary)}
+.tier-card.orange{background:#FFF8F0;border-color:#FFE4C8}
+.tier-card.orange .tier-icon{background:#FFECD6;color:var(--warning)}
+.tier-card.red{background:#FFF5F5;border-color:#FFD4D4}
+.tier-card.red .tier-icon{background:#FFE8E8;color:var(--danger)}
+
+/* Score Cards Row */
+.score-row{display:flex;gap:16px}
+.score-card{flex:1;background:var(--bg-white);border:1px solid var(--border);border-radius:8px;padding:24px 20px;text-align:center;transition:box-shadow 0.15s}
+.score-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.score-card .score-pct{font-size:32px;font-weight:700;line-height:1.2;margin-bottom:6px}
+.score-card .score-pct.purple{color:#7C3AED}
+.score-card .score-pct.blue{color:var(--primary)}
+.score-card .score-pct.teal{color:#0EA47A}
+.score-card .score-pct.amber{color:#D97706}
+.score-card .score-title{font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px}
+.score-card .score-items{font-size:12px;color:var(--text-tertiary);line-height:2}
+
+/* ========== Filter Bar ========== */
+.filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:16px 20px}
+.filter-bar .search-input{width:240px;height:34px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;transition:border-color 0.15s}
+.filter-bar .search-input:focus{border-color:var(--primary)}
+.filter-bar .search-input::placeholder{color:var(--text-tertiary)}
+.filter-bar .search-box{position:relative;display:inline-flex;align-items:center}
+.filter-bar .search-box .search-icon{position:absolute;left:10px;font-size:14px;pointer-events:none;z-index:1}
+.filter-bar .search-box .search-input{padding-left:32px}
+.filter-bar select{height:34px;padding:0 28px 0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;background:#fff;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.filter-bar select:focus{border-color:var(--primary)}
+.filter-bar .date-range{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-tertiary)}
+.filter-bar .date-range input[type="date"]{height:34px;padding:0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;color:var(--text-primary)}
+.filter-bar .date-range input[type="date"]:focus{border-color:var(--primary)}
+.filter-bar .spacer{flex:1}
+.filter-bar .btn{padding:0 16px;height:34px;border-radius:var(--radius);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;border:none;font-weight:500;white-space:nowrap}
+.filter-bar .btn-primary{background:var(--primary);color:#fff}
+.filter-bar .btn-primary:hover{background:var(--primary-hover)}
+.filter-bar .btn-outline{background:#fff;color:var(--text-secondary);border:1px solid var(--border)}
+.filter-bar .btn-outline:hover{border-color:var(--primary);color:var(--primary)}
+.filter-bar .btn-success{background:#fff;color:var(--success);border:1px solid var(--success)}
+.filter-bar .btn-success:hover{background:var(--success);color:#fff}
+
+/* ========== Table ========== */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+table th,table td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:13px;white-space:nowrap}
+table th{background:#FAFBFC;color:var(--text-secondary);font-weight:500;font-size:12px;user-select:none}
+table tbody tr:hover{background:#FAFBFC}
+table tbody tr:last-child td{border-bottom:none}
+table .text-right{text-align:right}
+table .text-center{text-align:center}
+
+/* ========== Tags ========== */
+.tag{display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;line-height:20px}
+.tag-success{color:var(--success);background:var(--success-bg)}
+.tag-warning{color:var(--warning);background:var(--warning-bg)}
+.tag-danger{color:var(--danger);background:var(--danger-bg)}
+.tag-primary{color:var(--primary);background:var(--primary-light)}
+.tag-default{color:var(--text-tertiary);background:var(--bg-page)}
+
+/* ========== Checkbox ========== */
+table input[type="checkbox"]{width:15px;height:15px;accent-color:var(--primary)}
+
+/* ========== Action Links ========== */
+.action-links{display:flex;gap:10px}
+.action-links a{color:var(--primary);cursor:pointer;font-size:13px;text-decoration:none}
+.action-links a:hover{text-decoration:underline}
+.action-links a.danger{color:var(--danger)}
+.action-links a.disabled{color:var(--text-tertiary);cursor:not-allowed;pointer-events:none}
+
+/* ========== Pagination ========== */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;font-size:13px;color:var(--text-secondary)}
+.pagination .total{flex-shrink:0}
+.pagination .page-controls{display:flex;align-items:center;gap:6px}
+.pagination .page-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-secondary);transition:all 0.15s}
+.pagination .page-btn:hover:not(.disabled){border-color:var(--primary);color:var(--primary)}
+.pagination .page-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.pagination .page-btn.disabled{opacity:0.4;cursor:not-allowed}
+.pagination .page-size{margin-left:16px;display:flex;align-items:center;gap:6px}
+.pagination .page-size select{height:32px;padding:0 24px 0 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386909C' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center}
+
+/* ========== Empty State ========== */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-tertiary)}
+.empty-state .empty-icon{width:80px;height:80px;margin-bottom:16px;background:var(--bg-page);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px}
+.empty-state p{font-size:14px}
+
+/* ========== Modal ========== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg-white);border-radius:6px;box-shadow:var(--shadow-lg);width:720px;max-height:85vh;display:flex;flex-direction:column;animation:modalIn 0.2s ease}
+.modal.wide{width:860px}
+@keyframes modalIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-size:16px;font-weight:600}
+.modal-close{width:28px;height:28px;border:none;background:transparent;cursor:pointer;font-size:18px;color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;border-radius:var(--radius)}
+.modal-close:hover{background:var(--bg-page);color:var(--text-primary)}
+.modal-body{flex:1;overflow-y:auto;padding:0}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+
+/* ========== Tabs ========== */
+.tabs{display:flex;border-bottom:1px solid var(--border);padding:0 20px;flex-shrink:0}
+.tab-item{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;user-select:none}
+.tab-item:hover{color:var(--primary)}
+.tab-item.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:500}
+.tab-content{display:none;padding:20px}
+.tab-content.active{display:block}
+
+/* ========== Form ========== */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text-primary)}
+.form-group label .required{color:var(--danger);margin-left:2px}
+.form-control{width:100%;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;outline:none;transition:border-color 0.15s;color:var(--text-primary)}
+.form-control:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,93,255,0.1)}
+textarea.form-control{height:80px;padding:8px 12px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{grid-template-columns:repeat(3,1fr)}
+.form-hint{font-size:12px;color:var(--text-tertiary);margin-top:4px}
+
+/* ========== Detail Info ========== */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.info-item{display:flex;flex-direction:column;gap:4px}
+.info-item .info-label{font-size:12px;color:var(--text-tertiary)}
+.info-item .info-value{font-size:14px;color:var(--text-primary)}
+.info-full{grid-column:1/-1}
+
+/* ========== Alert Row ========== */
+.text-danger{color:var(--danger) !important}
+.text-warning{color:var(--warning) !important}
+.text-success{color:var(--success) !important}
+.text-primary{color:var(--primary) !important}
+.expired-highlight{color:var(--danger);font-weight:500}
+
+/* ========== Buttons ========== */
+.btn{padding:0 16px;height:34px;border-radius:var(--radius);font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;border:none;font-weight:500}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-default{background:#fff;color:var(--text-secondary);border:1px solid var(--border)}
+.btn-default:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:#fff;color:var(--danger);border:1px solid var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+
+/* ========== Sub-table ========== */
+.sub-table{margin-top:12px}
+.sub-table table th{background:#F7F8FA;font-size:12px}
+.sub-table table td{font-size:12px}
+
+/* ========== Upload area ========== */
+.upload-area{border:1px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;color:var(--text-tertiary);cursor:pointer;transition:all 0.15s;margin-bottom:12px}
+.upload-area:hover{border-color:var(--primary);color:var(--primary)}
+.upload-area .upload-icon{font-size:28px;margin-bottom:8px}
+.file-list{display:flex;flex-direction:column;gap:8px}
+.file-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg-page);border-radius:var(--radius);font-size:13px}
+.file-item .file-icon{color:var(--primary)}
+.file-item .file-name{flex:1}
+.file-item .file-status{font-size:12px}
+.file-item .file-preview{cursor:pointer;color:var(--primary);font-size:12px}
+
+/* Toast */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:var(--radius);font-size:14px;z-index:9999;display:none;box-shadow:var(--shadow-lg)}
+.toast.success{background:#E8FFEA;color:var(--success);border:1px solid var(--success);display:block}
+.toast.error{background:#FFECE8;color:var(--danger);border:1px solid var(--danger);display:block}
+
+/* ========== Manufacturer Page ========== */
+.stat-card .stat-icon-wrap{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:10px;flex-shrink:0}
+.stat-card .stat-icon-wrap.green{background:#E8FFEA;color:var(--success)}
+.stat-card .stat-icon-wrap.blue{background:var(--primary-light);color:var(--primary)}
+.stat-card .stat-icon-wrap.orange{background:var(--warning-bg);color:var(--warning)}
+.stat-card .stat-icon-wrap.red{background:var(--danger-bg);color:var(--danger)}
+.stat-card .stat-icon-wrap.purple{background:#EDE4F8;color:#7C3AED}
+.stat-card .stat-number.purple{color:#7C3AED}
+.stat-card.clickable .stat-sub{color:var(--primary)}
+.mfgr-tab-content{display:none}
+.mfgr-tab-content.active{display:block}
+.mfgr-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:600;margin-left:4px;vertical-align:middle;line-height:1}
+.brand-tag{display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;margin:2px 4px 2px 0;line-height:20px}
+.warranty-card{background:var(--bg-white);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:12px;transition:box-shadow 0.15s}
+.warranty-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.06)}
+.warranty-card .warranty-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.warranty-card .warranty-company{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;color:var(--text-primary)}
+.warranty-card .warranty-update{font-size:12px;color:var(--text-tertiary)}
+.warranty-card .warranty-body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.warranty-card .warranty-item .warranty-label{font-size:12px;color:var(--text-tertiary);margin-bottom:6px}
+.warranty-card .warranty-item .warranty-value{color:var(--text-primary);font-weight:500;font-size:13px;line-height:1.6}
+.warranty-card .warranty-footer{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.warranty-level-module{background:#F0F6FF;border:1px solid #D0E2FF;border-radius:8px;padding:24px;margin-top:20px}
+.warranty-level-module .wl-module-title{font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px}
+.warranty-level-cards{display:flex;gap:16px}
+.warranty-level-card{flex:1;background:var(--bg-white);border-radius:8px;border:1px solid var(--border);padding:20px}
+.warranty-level-card .wl-card-header{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.warranty-level-card .wl-card-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.warranty-level-card .wl-card-title{font-size:14px;font-weight:600;color:var(--text-primary)}
+.warranty-level-card .wl-card-detail{font-size:12px;color:var(--text-secondary);line-height:2}
+.warranty-level-card .wl-card-detail .dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.recall-summary-card{flex:1;border-radius:8px;padding:20px;display:flex;align-items:center;gap:14px}
+.recall-summary-card.red-bg{background:#FFF5F5;border:1px solid #FFD4D4}
+.recall-summary-card.blue-bg{background:#F0F6FF;border:1px solid #D0E2FF}
+.recall-summary-card.green-bg{background:#E8FFEA;border:1px solid #B7EBC2}
+.recall-summary-card .recall-icon{width:42px;height:42px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.recall-summary-card .recall-icon.red{background:#FFE8E8;color:var(--danger)}
+.recall-summary-card .recall-icon.blue{background:#DEE9FC;color:var(--primary)}
+.recall-summary-card .recall-icon.green{background:#C6F0D0;color:var(--success)}
+.recall-summary-card .recall-info{flex:1;min-width:0}
+.recall-summary-card .recall-num{font-size:28px;font-weight:700;line-height:1.2}
+.recall-summary-card .recall-label{font-size:12px;color:var(--text-tertiary);margin-top:4px}
+.mfgr-coverage-bar{display:inline-block;width:60px;height:6px;border-radius:3px;background:var(--border);vertical-align:middle;margin-right:6px;overflow:hidden}
+.mfgr-coverage-bar .mfgr-coverage-fill{display:block;height:100%;border-radius:3px;background:var(--success)}
+</style>
+</head>
+<body>
+
+<!-- ==================== TOP NAVIGATION ==================== -->
+<nav class="top-nav">
+  <div class="logo-area">
+    <div class="logo-icon">🚜</div>
+    <span class="logo-text">农机补贴政务管理系统</span>
+  </div>
+  <div class="user-area">
+    <span>📬 消息</span>
+    <span>🔔 通知 <b style="color:var(--danger)">3</b></span>
+    <div class="avatar">张</div>
+    <span>张管理</span>
+    <span style="cursor:pointer">▼</span>
+  </div>
+</nav>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+  <div class="menu-item expanded active" data-group="user">
+    <span class="icon">👥</span> 用户
+    <span class="arrow">▶</span>
+  </div>
+  <div class="sub-menu open" data-parent="user">
+    <div class="menu-item active" data-page="buyer">
+      <span class="icon"></span> 购机者管理
+    </div>
+    <div class="menu-item" data-page="dealer">
+      <span class="icon"></span> 经销商管理
+    </div>
+    <div class="menu-item" data-page="manufacturer">
+      <span class="icon"></span> 制造商管理
+    </div>
+  </div>
+</aside>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main-content">
+
+  <!-- ========== PAGE: 购机者管理 ========== -->
+  <div class="page active" id="page-buyer">
+    <div class="page-header">
+      <div class="breadcrumb">用户 <span>/ 购机者管理</span></div>
+      <h2>购机者管理</h2>
+    </div>
+    <div class="stats-row" id="buyer-stats-row">
+      <div class="stat-card">
+        <div class="stat-title">全部用户</div>
+        <div class="stat-number" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">已认证</div>
+        <div class="stat-number green" id="stat-certified">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">已禁用</div>
+        <div class="stat-number red" id="stat-disabled">0</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input type="text" class="search-input" placeholder="搜索购机人姓名/手机号/身份证号" id="buyer-search">
+        <select id="buyer-auth-status">
+          <option value="">实名认证状态</option>
+          <option value="certified">已认证</option>
+          <option value="uncertified">未认证</option>
+        </select>
+        <select id="buyer-status">
+          <option value="">用户状态</option>
+          <option value="normal">正常</option>
+          <option value="frozen">冻结</option>
+        </select>
+        <div class="date-range">
+          <input type="date" id="buyer-date-start"> 至 <input type="date" id="buyer-date-end">
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-outline" onclick="handleBatchDelete('buyer')" style="color:var(--danger);border-color:var(--danger)">🗑 批量删除</button>
+        <button class="btn btn-outline" onclick="handleBatchDisable('buyer')">🚫 批量禁用</button>
+        <button class="btn btn-outline" onclick="handleExport('buyer')">📥 导出Excel</button>
+        <button class="btn btn-primary" onclick="openAddModal('buyer')">＋ 新增购机者</button>
+      </div>
+      <div class="table-wrap" id="buyer-table-wrap"></div>
+      <div class="pagination" id="buyer-pagination"></div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE: 经销商管理 ========== -->
+  <div class="page" id="page-dealer">
+    <div class="page-header">
+      <div class="breadcrumb">用户 <span>/ 经销商管理</span></div>
+      <h2>经销商管理</h2>
+    </div>
+    <div class="stats-row" id="dealer-stats-row">
+      <div class="stat-card">
+        <div class="stat-title">注册经销商</div>
+        <div class="stat-number" id="dstat-total">0</div>
+        <div class="stat-sub" id="dstat-total-sub">同比 --</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">已认证</div>
+        <div class="stat-number green" id="dstat-certified">0</div>
+        <div class="stat-sub" id="dstat-certified-sub">占比 --</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">活跃经销商</div>
+        <div class="stat-number" id="dstat-active">0</div>
+        <div class="stat-sub">近30天</div>
+      </div>
+      <div class="stat-card clickable" id="dstat-pending-card" onclick="filterPendingDealers()">
+        <div class="stat-title">待审核</div>
+        <div class="stat-number orange" id="dstat-pending">0</div>
+        <div class="stat-sub" style="color:var(--primary)">可点击</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">补贴合规率</div>
+        <div class="stat-number green" id="dstat-compliance">--</div>
+        <div class="stat-sub">代办申报通过率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">客户投诉率</div>
+        <div class="stat-number blue" id="dstat-complaint">--</div>
+        <div class="stat-sub">近30天</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">待结算金额</div>
+        <div class="stat-number orange" id="dstat-settlement">--</div>
+        <div class="stat-sub">补贴待发放</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <select id="dealer-cert-status">
+          <option value="">认证状态</option>
+          <option value="approved">已认证</option>
+          <option value="pending">待审核</option>
+          <option value="rejected">已驳回</option>
+        </select>
+        <select id="dealer-level">
+          <option value="">经销商等级</option>
+          <option value="core">核心经销商</option>
+          <option value="standard">标准经销商</option>
+          <option value="observe">观察期</option>
+          <option value="warning">预警</option>
+        </select>
+        <select id="dealer-region">
+          <option value="">地区</option>
+          <option value="北京">北京</option>
+          <option value="上海">上海</option>
+          <option value="天津">天津</option>
+          <option value="重庆">重庆</option>
+          <option value="河北">河北</option>
+          <option value="山西">山西</option>
+          <option value="内蒙古">内蒙古</option>
+          <option value="辽宁">辽宁</option>
+          <option value="吉林">吉林</option>
+          <option value="黑龙江">黑龙江</option>
+          <option value="江苏">江苏</option>
+          <option value="浙江">浙江</option>
+          <option value="安徽">安徽</option>
+          <option value="福建">福建</option>
+          <option value="江西">江西</option>
+          <option value="山东">山东</option>
+          <option value="河南">河南</option>
+          <option value="湖北">湖北</option>
+          <option value="湖南">湖南</option>
+          <option value="广东">广东</option>
+          <option value="广西">广西</option>
+          <option value="海南">海南</option>
+          <option value="四川">四川</option>
+          <option value="贵州">贵州</option>
+          <option value="云南">云南</option>
+          <option value="西藏">西藏</option>
+          <option value="陕西">陕西</option>
+          <option value="甘肃">甘肃</option>
+          <option value="青海">青海</option>
+          <option value="宁夏">宁夏</option>
+          <option value="新疆">新疆</option>
+        </select>
+        <select id="dealer-sales-range">
+          <option value="">销售业绩区间</option>
+          <option value="lt100">100万以下</option>
+          <option value="100-500">100-500万</option>
+          <option value="500-1000">500-1000万</option>
+          <option value="gt1000">1000万以上</option>
+        </select>
+        <select id="dealer-credit-range">
+          <option value="">信用评分区间</option>
+          <option value="gt900">900以上</option>
+          <option value="800-900">800-900</option>
+          <option value="700-800">700-800</option>
+        </select>
+        <select id="dealer-subsidy-qual">
+          <option value="">补贴待办资质</option>
+          <option value="yes">有资质</option>
+          <option value="no">无资质</option>
+        </select>
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" placeholder="经销商法人/执照号" id="dealer-search">
+        </div>
+        <div class="spacer"></div>
+        <button class="btn btn-outline" onclick="handleBatchDisable('dealer')">🚫 批量禁用</button>
+        <button class="btn btn-outline" onclick="handleExport('dealer')">📥 批量导出</button>
+      </div>
+      <div class="table-wrap" id="dealer-table-wrap"></div>
+      <div class="pagination" id="dealer-pagination"></div>
+
+      <!-- 经销商等级体系 -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-icon">🏆</span>
+          <h3>经销商等级体系（替代黄金/白金）</h3>
+        </div>
+        <div class="section-body">
+          <div class="tier-row">
+            <div class="tier-card purple">
+              <div class="tier-icon">💎</div>
+              <div class="tier-info">
+                <div class="tier-name">核心经销商</div>
+                <div class="tier-detail">
+                  <span class="label">条件：</span>年销&gt;500万、合规率&gt;95%、0违规记录<br>
+                  <span class="label">权益：</span>资源位优先+结算周期缩短
+                </div>
+              </div>
+            </div>
+            <div class="tier-card blue">
+              <div class="tier-icon">⭐</div>
+              <div class="tier-info">
+                <div class="tier-name">标准经销商</div>
+                <div class="tier-detail">
+                  <span class="label">条件：</span>年销100-500万、合规率&gt;90%、正常经营<br>
+                  <span class="label">权益：</span>正常权益
+                </div>
+              </div>
+            </div>
+            <div class="tier-card orange">
+              <div class="tier-icon">🔍</div>
+              <div class="tier-info">
+                <div class="tier-name">观察期</div>
+                <div class="tier-detail">
+                  <span class="label">条件：</span>新入驻&lt;6个月、期间商品需逐条审核<br>
+                  <span class="label">权益：</span>商品逐条审核+月度评估
+                </div>
+              </div>
+            </div>
+            <div class="tier-card red">
+              <div class="tier-icon">⚠️</div>
+              <div class="tier-info">
+                <div class="tier-name">预警经销商</div>
+                <div class="tier-detail">
+                  <span class="label">条件：</span>合规率&lt;85%、有违规记录<br>
+                  <span class="label">权益：</span>限制上新+季度评估
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 信用评分体系 -->
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h3>信用评分体系（经销商维度）</h3>
+        </div>
+        <div class="section-body">
+          <div class="score-row">
+            <div class="score-card">
+              <div class="score-pct purple">35%</div>
+              <div class="score-title">经营合规</div>
+              <div class="score-items">补贴申报合规率<br>违规记录数<br>处罚次数</div>
+            </div>
+            <div class="score-card">
+              <div class="score-pct blue">25%</div>
+              <div class="score-title">交易质量</div>
+              <div class="score-items">退货退款率<br>投诉率<br>订单完成率</div>
+            </div>
+            <div class="score-card">
+              <div class="score-pct teal">20%</div>
+              <div class="score-title">资质健康</div>
+              <div class="score-items">品牌授权到期率<br>经营证照完整性<br>代办资质有效性</div>
+            </div>
+            <div class="score-card">
+              <div class="score-pct amber">20%</div>
+              <div class="score-title">财务健康</div>
+              <div class="score-items">结算按时率<br>贷款还款记录<br>资金异常波动</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== PAGE: 制造商管理 ========== -->
+  <div class="page" id="page-manufacturer">
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div>
+        <div class="breadcrumb">用户 <span>/ 制造商管理</span></div>
+        <h2>制造商管理</h2>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-top:4px">农机制造企业产品合规与质量管理</p>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal('manufacturer')">＋ 新增制造商</button>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stats-row" id="mfgr-stats-row">
+      <div class="stat-card">
+        <div class="stat-icon-wrap blue">🏭</div>
+        <div class="stat-title">入驻制造商</div>
+        <div class="stat-number" id="mstat-total">0</div>
+        <div class="stat-sub">已认证<span id="mstat-approved">0</span>家</div>
+      </div>
+      <div class="stat-card clickable" onclick="filterMfgrByStat('coverage')">
+        <div class="stat-icon-wrap green">✅</div>
+        <div class="stat-title">鉴定覆盖率</div>
+        <div class="stat-number green" id="mstat-coverage">0%</div>
+        <div class="stat-sub">可点击筛选</div>
+      </div>
+      <div class="stat-card clickable" onclick="filterMfgrByStat('catalog')">
+        <div class="stat-icon-wrap blue">📦</div>
+        <div class="stat-title">补贴目录产品</div>
+        <div class="stat-number blue" id="mstat-catalog">0</div>
+        <div class="stat-sub">可点击筛选</div>
+      </div>
+      <div class="stat-card clickable" onclick="filterMfgrByStat('complaint')">
+        <div class="stat-icon-wrap orange">⚠️</div>
+        <div class="stat-title">质量投诉预警</div>
+        <div class="stat-number orange" id="mstat-complaint-warn">0</div>
+        <div class="stat-sub">投诉率>1%</div>
+      </div>
+      <div class="stat-card clickable" onclick="switchManufacturerTab('recall')">
+        <div class="stat-icon-wrap red">❗</div>
+        <div class="stat-title">产品召回处理</div>
+        <div class="stat-number red" id="mstat-recall-pending">0</div>
+        <div class="stat-sub">待处理召回</div>
+      </div>
+      <div class="stat-card clickable" onclick="filterMfgrByStat('pending')">
+        <div class="stat-icon-wrap purple">🕐</div>
+        <div class="stat-title">待审核企业</div>
+        <div class="stat-number purple" id="mstat-audit-pending">0</div>
+        <div class="stat-sub">需要处理</div>
+      </div>
+    </div>
+
+    <!-- Main Card with Tabs -->
+    <div class="card">
+      <!-- Tab Switcher -->
+      <div class="tabs" id="mfgr-tabs" style="padding:0 20px">
+        <div class="tab-item active" data-mfgr-tab="list" onclick="switchManufacturerTab('list')">制造商列表</div>
+        <div class="tab-item" data-mfgr-tab="recall" onclick="switchManufacturerTab('recall')">产品召回管理<span class="mfgr-badge" id="mfgr-recall-badge">0</span></div>
+        <div class="tab-item" data-mfgr-tab="warranty" onclick="switchManufacturerTab('warranty')">质保政策管理</div>
+      </div>
+
+      <!-- ===== Tab 1: 制造商列表 ===== -->
+      <div class="mfgr-tab-content active" id="mfgr-tab-list">
+        <div class="filter-bar">
+          <select id="mfgr-audit-status">
+            <option value="">全部认证状态</option>
+            <option value="approved">已认证</option>
+            <option value="pending">待审核</option>
+            <option value="rejected">已驳回</option>
+          </select>
+          <select id="mfgr-coverage">
+            <option value="">鉴定覆盖率</option>
+            <option value="qualified">达标（≥90%）</option>
+            <option value="unqualified">未达标（<90%）</option>
+          </select>
+          <select id="mfgr-complaint">
+            <option value="">质量投诉率</option>
+            <option value="low">低（<1%）</option>
+            <option value="high">高（≥1%）</option>
+          </select>
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="搜索企业名称或品牌" id="manufacturer-search">
+          </div>
+          <button class="btn btn-outline" onclick="resetMfgrFilters()">↻ 重置筛选</button>
+          <div class="spacer"></div>
+          <button class="btn btn-outline" onclick="handleExport('manufacturer')">📥 导出Excel</button>
+        </div>
+        <div class="table-wrap" id="mfgr-table-wrap"></div>
+        <div class="pagination" id="mfgr-pagination"></div>
+      </div>
+
+      <!-- ===== Tab 2: 产品召回管理 ===== -->
+      <div class="mfgr-tab-content" id="mfgr-tab-recall">
+        <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-secondary)">共<span id="recall-total" style="font-weight:600;color:var(--text-primary)">0</span>条召回记录，<span id="recall-pending-text" style="color:var(--danger);font-weight:600">0条待处理</span></span>
+          <button class="btn btn-danger" onclick="openRecallAddModal()" style="background:var(--danger);color:#fff;border:none">＋ 新增召回记录</button>
+        </div>
+        <div class="table-wrap" id="mfgr-recall-table-wrap"></div>
+        <div style="display:flex;gap:16px;padding:20px" id="mfgr-recall-summary"></div>
+      </div>
+
+      <!-- ===== Tab 3: 质保政策管理 ===== -->
+      <div class="mfgr-tab-content" id="mfgr-tab-warranty">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-secondary)">共<span id="warranty-total" style="font-weight:600;color:var(--text-primary)">0</span>家制造商质保政策</span>
+        </div>
+        <div id="mfgr-warranty-wrap" style="padding:20px"></div>
+        <!-- 质保政策分级说明 -->
+        <div class="warranty-level-module">
+          <div class="wl-module-title">📋 质保政策分级说明</div>
+          <div class="warranty-level-cards">
+            <div class="warranty-level-card">
+              <div class="wl-card-header">
+                <div class="wl-card-icon" style="background:#EDE4F8;color:#7C3AED">⭐</div>
+                <span class="wl-card-title" style="color:#7C3AED">优质质保</span>
+              </div>
+              <div class="wl-card-detail">
+                <div><span class="dot" style="background:#7C3AED"></span>质保期 ≥ 2年或2000小时</div>
+                <div><span class="dot" style="background:#7C3AED"></span>全部核心零部件覆盖</div>
+                <div><span class="dot" style="background:#7C3AED"></span>响应时效 ≤ 48小时</div>
+              </div>
+            </div>
+            <div class="warranty-level-card">
+              <div class="wl-card-header">
+                <div class="wl-card-icon" style="background:var(--primary-light);color:var(--primary)">✓</div>
+                <span class="wl-card-title" style="color:var(--primary)">延长质保</span>
+              </div>
+              <div class="wl-card-detail">
+                <div><span class="dot" style="background:var(--primary)"></span>质保期 1.5-2年</div>
+                <div><span class="dot" style="background:var(--primary)"></span>主要功能部件覆盖</div>
+                <div><span class="dot" style="background:var(--primary)"></span>响应时效 48-72小时</div>
+              </div>
+            </div>
+            <div class="warranty-level-card">
+              <div class="wl-card-header">
+                <div class="wl-card-icon" style="background:var(--bg-page);color:var(--text-secondary)">🛡️</div>
+                <span class="wl-card-title" style="color:var(--text-secondary)">标准质保</span>
+              </div>
+              <div class="wl-card-detail">
+                <div><span class="dot" style="background:var(--text-tertiary)"></span>质保期 1-1.5年</div>
+                <div><span class="dot" style="background:var(--text-tertiary)"></span>基础部件覆盖</div>
+                <div><span class="dot" style="background:var(--text-tertiary)"></span>响应时效 3-5个工作日</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== ADD/EDIT MODAL ==================== -->
+<div class="modal-overlay" id="edit-modal-overlay">
+  <div class="modal wide" id="edit-modal">
+    <div class="modal-header">
+      <h3 id="edit-modal-title">新增</h3>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="tabs" id="edit-tabs"></div>
+    <div class="modal-body" id="edit-tab-contents"></div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary" onclick="handleSave()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DETAIL MODAL ==================== -->
+<div class="modal-overlay" id="detail-modal-overlay">
+  <div class="modal wide" id="detail-modal">
+    <div class="modal-header">
+      <h3 id="detail-modal-title">详情</h3>
+      <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    </div>
+    <div class="tabs" id="detail-tabs"></div>
+    <div class="modal-body" id="detail-tab-contents"></div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeDetailModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== RECALL MODAL ==================== -->
+<div class="modal-overlay" id="recall-modal-overlay">
+  <div class="modal" id="recall-modal">
+    <div class="modal-header">
+      <h3 id="recall-modal-title">新增召回记录</h3>
+      <button class="modal-close" onclick="closeRecallModal()">✕</button>
+    </div>
+    <div class="modal-body" id="recall-modal-body" style="padding:20px"></div>
+    <div class="modal-footer" id="recall-modal-footer"></div>
+  </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== DATA STORE ====================
+const pageConfig = {
+  buyer: {
+    name: '购机者管理',
+    columns: ['','购机人姓名','手机号','身份证号','所在地区','实名认证状态','名下农机数量','注册时间','状态','操作'],
+    searchFields: ['name','phone','idCard'],
+    editTabs: [
+      {key:'base',label:'基础身份信息',fields:[
+        {label:'购机人姓名',name:'name',type:'text',required:true},
+        {label:'手机号',name:'phone',type:'text',required:true},
+        {label:'身份证号',name:'idCard',type:'text',required:true},
+        {label:'所在地区',name:'region',type:'cascader'},
+        {label:'详细地址',name:'address',type:'text'},
+        {label:'用户状态',name:'status',type:'select',options:[{v:'normal',l:'正常'},{v:'frozen',l:'冻结'}]},
+      ]},
+      {key:'cert',label:'实名认证',fields:[
+        {label:'实名认证状态',name:'authStatus',type:'select',options:[{v:'certified',l:'已认证'},{v:'uncertified',l:'未认证'}]},
+      ]},
+    ],
+    detailTabs: [
+      {key:'base',label:'基础身份信息',type:'info'},
+      {key:'machines',label:'已购农机记录',type:'table',columns:['农机名称','型号','购买日期','经销商','补贴金额','补贴状态']},
+      {key:'subsidy',label:'补贴申领历史',type:'table',columns:['申请编号','农机名称','申请金额','申请日期','审核状态','发放日期']},
+      {key:'certFiles',label:'实名认证证书',type:'files'},
+    ]
+  },
+  dealer: {
+    name: '经销商管理',
+    columns: ['法人/电话','地区','品牌/商品','订单/销售额','补贴总额/占比','补贴待办','信用评分','合规率','投诉率','认证状态','操作'],
+    searchFields: ['companyName','legalPerson'],
+    editTabs: [
+      {key:'base',label:'企业基础信息',fields:[
+        {label:'经销商企业名称',name:'companyName',type:'text',required:true},
+        {label:'统一社会信用代码',name:'creditCode',type:'text',required:true},
+        {label:'法人姓名',name:'legalPerson',type:'text',required:true},
+        {label:'法人电话',name:'legalPhone',type:'text',required:true},
+        {label:'经营地址',name:'address',type:'text'},
+        {label:'资质有效期至',name:'certExpire',type:'date'},
+        {label:'审核状态',name:'auditStatus',type:'select',options:[{v:'pending',l:'待审核'},{v:'approved',l:'已通过'},{v:'rejected',l:'驳回'}]},
+        {label:'经营状态',name:'status',type:'select',options:[{v:'normal',l:'正常'},{v:'disabled',l:'禁用'}]},
+      ]},
+      {key:'license',label:'营业执照',type:'upload'},
+      {key:'legalCert',label:'法人身份证',type:'upload'},
+      {key:'authCert',label:'授权证书',type:'upload'},
+    ],
+    detailTabs: [
+      {key:'base',label:'企业基础信息',type:'info'},
+      {key:'license',label:'营业执照',type:'files'},
+      {key:'legalCert',label:'法人身份证',type:'files'},
+      {key:'authCert',label:'授权证书',type:'files'},
+      {key:'products',label:'旗下上架农机',type:'table',columns:['农机名称','型号','品牌','价格','上架日期','审核状态']},
+      {key:'auditLog',label:'历史审核记录',type:'table',columns:['审核时间','审核人','审核结果','审核意见']},
+    ]
+  },
+  manufacturer: {
+    name: '制造商管理',
+    columns: ['企业信息','旗下品牌','产品合规','鉴定覆盖率','质量指标','质保政策','认证状态','操作'],
+    searchFields: ['companyName'],
+    editTabs: [
+      {key:'base',label:'企业基础信息',cols:3,fields:[
+        {label:'制造企业名称',name:'companyName',type:'text',required:true},
+        {label:'统一社会信用代码',name:'creditCode',type:'text',required:true},
+        {label:'生产许可证编号',name:'licenseNo',type:'text',required:true},
+        {label:'法人姓名',name:'legalPerson',type:'text',required:true},
+        {label:'法人联系电话',name:'phone',type:'text',required:true},
+        {label:'可生产农机品目',name:'categories',type:'select',options:[
+          {v:'tractor',l:'拖拉机'},{v:'harvester',l:'收割机'},{v:'riceTransplanter',l:'插秧机'},
+          {v:'sprayer',l:'植保喷雾机'},{v:'dryer',l:'粮食烘干机'},{v:'tiller',l:'旋耕机'},
+        ]},
+        {label:'生产厂址',name:'address',type:'text',colSpan:2},
+        {label:'企业注册地址',name:'registeredAddress',type:'text'},
+      ]},
+      {key:'prodCert',label:'生产资质证书',type:'upload'},
+      {key:'factory',label:'厂区信息',type:'upload'},
+    ],
+    detailTabs: [
+      {key:'base',label:'企业基础信息',type:'info'},
+      {key:'products',label:'产品合规详情',type:'table',columns:['农机品目','型号范围','总数','已鉴定','补贴目录','鉴定覆盖率']},
+      {key:'dealers',label:'合作经销商',type:'table',columns:['经销商名称','所在地区','合作起始日期','在售机型数量','联系方式']},
+      {key:'recalls',label:'召回历史',type:'table',columns:['召回产品','召回原因','影响数量','严重程度','召回日期','处理状态']},
+    ]
+  }
+};
+
+// Mock data
+const mockData = {
+  buyer: [
+    {id:1,name:'张大山',phone:'138****6789',idCard:'3201**********1234',region:'江苏省南京市江宁区',authStatus:'certified',machineCount:3,regDate:'2024-03-15',status:'normal'},
+    {id:2,name:'李福田',phone:'139****8901',idCard:'3205**********5678',region:'江苏省苏州市吴中区',authStatus:'certified',machineCount:1,regDate:'2024-05-20',status:'normal'},
+    {id:3,name:'王建国',phone:'137****2345',idCard:'3202**********9012',region:'江苏省无锡市惠山区',authStatus:'uncertified',machineCount:0,regDate:'2024-06-10',status:'frozen'},
+    {id:4,name:'赵农友',phone:'136****3456',idCard:'3203**********7890',region:'江苏省徐州市铜山区',authStatus:'certified',machineCount:5,regDate:'2024-01-08',status:'normal'},
+    {id:5,name:'孙丰收',phone:'135****4567',idCard:'3206**********3456',region:'江苏省南通市通州区',authStatus:'certified',machineCount:2,regDate:'2024-07-22',status:'normal'},
+    {id:6,name:'周耕种',phone:'133****5678',idCard:'3208**********7891',region:'江苏省淮安市淮安区',authStatus:'uncertified',machineCount:1,regDate:'2024-04-18',status:'normal'},
+    {id:7,name:'吴麦田',phone:'132****6789',idCard:'3209**********2345',region:'江苏省盐城市亭湖区',authStatus:'certified',machineCount:0,regDate:'2024-08-30',status:'frozen'},
+    {id:8,name:'郑丰收',phone:'131****7890',idCard:'3210**********6789',region:'江苏省扬州市邗江区',authStatus:'certified',machineCount:4,regDate:'2024-02-14',status:'normal'},
+  ],
+  dealer: [
+    {id:1,companyName:'南京农机销售有限公司',legalPerson:'陈商祺',legalPhone:'139****0001',region:'江苏省南京市江宁区',brandCount:12,onSale:200,offSale:30,pendingReview:4,orderCount:45,salesAmount:125.0,subsidyAmount:23.4,subsidyRatio:18.7,subsidyQual:'yes',creditScore:920,complianceRate:98.5,complaintRate:0.8,auditStatus:'approved',status:'normal',level:'standard'},
+    {id:2,companyName:'苏州丰收农机贸易公司',legalPerson:'刘农丰',legalPhone:'139****0002',region:'江苏省苏州市吴中区',brandCount:8,onSale:156,offSale:22,pendingReview:2,orderCount:38,salesAmount:98.6,subsidyAmount:18.2,subsidyRatio:18.5,subsidyQual:'yes',creditScore:885,complianceRate:96.2,complaintRate:1.2,auditStatus:'approved',status:'normal',level:'standard'},
+    {id:3,companyName:'无锡绿野农机销售中心',legalPerson:'赵田野',legalPhone:'139****0003',region:'江苏省无锡市惠山区',brandCount:5,onSale:89,offSale:15,pendingReview:1,orderCount:22,salesAmount:56.3,subsidyAmount:9.8,subsidyRatio:17.4,subsidyQual:'no',creditScore:750,complianceRate:91.5,complaintRate:2.5,auditStatus:'approved',status:'normal',level:'standard'},
+    {id:4,companyName:'徐州大地农机贸易公司',legalPerson:'钱老板',legalPhone:'139****0004',region:'江苏省徐州市铜山区',brandCount:3,onSale:42,offSale:8,pendingReview:6,orderCount:12,salesAmount:28.0,subsidyAmount:5.2,subsidyRatio:18.6,subsidyQual:'yes',creditScore:680,complianceRate:88.0,complaintRate:3.8,auditStatus:'pending',status:'normal',level:'observe'},
+    {id:5,companyName:'常州金穗农机有限公司',legalPerson:'孙金穗',legalPhone:'139****0005',region:'江苏省常州市武进区',brandCount:6,onSale:78,offSale:35,pendingReview:0,orderCount:15,salesAmount:35.5,subsidyAmount:6.1,subsidyRatio:17.2,subsidyQual:'no',creditScore:620,complianceRate:82.3,complaintRate:5.6,auditStatus:'rejected',status:'disabled',level:'warning'},
+    {id:6,companyName:'南通滨江农机销售公司',legalPerson:'周滨江',legalPhone:'139****0006',region:'江苏省南通市通州区',brandCount:15,onSale:310,offSale:28,pendingReview:3,orderCount:62,salesAmount:188.5,subsidyAmount:35.6,subsidyRatio:18.9,subsidyQual:'yes',creditScore:950,complianceRate:99.1,complaintRate:0.3,auditStatus:'approved',status:'normal',level:'core'},
+  ],
+  manufacturer: [
+    {id:1,companyName:'东风农机集团有限公司',licenseNo:'NJ-2020-0001',legalPerson:'王大造',phone:'0519-88****01',address:'江苏省常州市武进区东风路1号',categories:'拖拉机、收割机、插秧机',certExpire:'2028-06-30',dealerCount:48,status:'normal',
+     brands:[{name:'东风',nameEn:'Dongfeng',color:'#165DFF'},{name:'东方红',nameEn:'Dongfanghong',color:'#00B42A'}],
+     totalProducts:156,certifiedProducts:149,catalogProducts:128,coverageRate:95.5,coverageQualified:true,
+     complaintRate:0.8,recallCount:1,warrantyLevel:'premium',warrantyPeriod:'整机3年或3000小时',warrantyCoverage:'发动机、变速箱、液压系统、传动轴',warrantyResponse:'省内24小时/省外48小时',
+     auditStatus:'approved'},
+    {id:2,companyName:'常发农机制造股份有限公司',licenseNo:'NJ-2019-0023',legalPerson:'李常发',phone:'0519-88****02',address:'江苏省常州市新北区常发大道88号',categories:'拖拉机、柴油机',certExpire:'2027-12-31',dealerCount:35,status:'normal',
+     brands:[{name:'常发',nameEn:'Changfa',color:'#FF7D00'},{name:'常柴',nameEn:'Changchai',color:'#F53F3F'}],
+     totalProducts:98,certifiedProducts:92,catalogProducts:85,coverageRate:93.9,coverageQualified:true,
+     complaintRate:1.5,recallCount:1,warrantyLevel:'extended',warrantyPeriod:'整机2年或2000小时',warrantyCoverage:'发动机、变速箱、主要液压部件',warrantyResponse:'省内24小时/省外72小时',
+     auditStatus:'approved'},
+    {id:3,companyName:'沃得农机装备有限公司',licenseNo:'NJ-2018-0156',legalPerson:'张沃得',phone:'0511-88****03',address:'江苏省镇江市丹阳市沃得工业园',categories:'收割机、插秧机、烘干机',certExpire:'2026-09-30',dealerCount:62,status:'normal',
+     brands:[{name:'沃得',nameEn:'World',color:'#165DFF'},{name:'沃野',nameEn:'Woye',color:'#0EA47A'}],
+     totalProducts:210,certifiedProducts:205,catalogProducts:196,coverageRate:97.6,coverageQualified:true,
+     complaintRate:0.5,recallCount:1,warrantyLevel:'premium',warrantyPeriod:'整机3年或3600小时',warrantyCoverage:'整机全系统覆盖（含电气、液压、动力总成）',warrantyResponse:'省内12小时/省外48小时',
+     auditStatus:'approved'},
+    {id:4,companyName:'久保田农机(江苏)有限公司',licenseNo:'NJ-WJ-2019-0089',legalPerson:'山田一郎',phone:'0512-88****04',address:'江苏省苏州市工业园区久保田路1号',categories:'插秧机、收割机',certExpire:'2027-03-15',dealerCount:28,status:'normal',
+     brands:[{name:'久保田',nameEn:'Kubota',color:'#F53F3F'},{name:'PRO',nameEn:'PRO Series',color:'#165DFF'}],
+     totalProducts:72,certifiedProducts:68,catalogProducts:60,coverageRate:94.4,coverageQualified:true,
+     complaintRate:0.6,recallCount:0,warrantyLevel:'premium',warrantyPeriod:'整机2年或1500小时',warrantyCoverage:'发动机、液压系统、插植机构、割台总成',warrantyResponse:'省内24小时/省外48小时',
+     auditStatus:'approved'},
+    {id:5,companyName:'江苏农丰机械制造厂',licenseNo:'NJ-2021-0034',legalPerson:'钱农丰',phone:'0523-88****05',address:'江苏省泰州市姜堰区农丰路66号',categories:'旋耕机、播种机',certExpire:'2024-11-30',dealerCount:8,status:'normal',
+     brands:[{name:'农丰',nameEn:'Nongfeng',color:'#FF7D00'}],
+     totalProducts:35,certifiedProducts:28,catalogProducts:22,coverageRate:80.0,coverageQualified:false,
+     complaintRate:2.8,recallCount:1,warrantyLevel:'standard',warrantyPeriod:'整机1年或800小时',warrantyCoverage:'发动机、变速箱',warrantyResponse:'省内48小时/省外72小时',
+     auditStatus:'pending'},
+    {id:6,companyName:'盐城丰收农机设备公司',licenseNo:'NJ-2022-0012',legalPerson:'孙丰收',phone:'0515-88****06',address:'江苏省盐城市亭湖区农机产业园',categories:'拖拉机、犁具',certExpire:'2025-04-20',dealerCount:15,status:'disabled',
+     brands:[{name:'盐丰',nameEn:'Yanfeng',color:'#165DFF'}],
+     totalProducts:42,certifiedProducts:30,catalogProducts:25,coverageRate:71.4,coverageQualified:false,
+     complaintRate:3.5,recallCount:0,warrantyLevel:'standard',warrantyPeriod:'整机1年或600小时',warrantyCoverage:'发动机',warrantyResponse:'省内48小时/省外96小时',
+     auditStatus:'rejected'},
+  ],
+  recallData: [
+    {id:1,manufacturer:'东风农机集团有限公司',product:'LX1504拖拉机',reason:'液压系统密封圈缺陷，存在渗油风险',affectedCount:156,severity:'severe',recallDate:'2025-05-12',status:'processing',
+     logs:[{time:'2025-05-12 14:30',operator:'张管理员',action:'发起召回',detail:'发现液压系统密封圈批次缺陷，启动主动召回程序，通知156台设备用户'}]},
+    {id:2,manufacturer:'常发农机制造股份有限公司',product:'CFH2004拖拉机',reason:'传动轴焊接强度不足，极端工况下可能断裂',affectedCount:89,severity:'serious',recallDate:'2025-04-28',status:'completed',
+     logs:[{time:'2025-04-28 09:15',operator:'李安全',action:'发起召回',detail:'质检发现传动轴焊接强度不足，立即启动召回方案'},{time:'2025-05-10 16:00',operator:'李安全',action:'完成修复',detail:'89台设备全部完成传动轴更换，召回作业结束，质检复查合格'}]},
+    {id:3,manufacturer:'沃得农机装备有限公司',product:'4LZ-8.0收割机',reason:'割台传动皮带存在断裂风险，影响收割安全',affectedCount:210,severity:'severe',recallDate:'2025-06-01',status:'pending',
+     logs:[{time:'2025-06-01 10:00',operator:'王质检',action:'发起召回',detail:'割台传动皮带耐久测试不达标，紧急召回210台设备，正制定维修方案'}]},
+    {id:4,manufacturer:'江苏农丰机械制造厂',product:'旋耕机1GQN-230',reason:'刀片紧固件扭矩不足，存在松动脱落隐患',affectedCount:45,severity:'serious',recallDate:'2025-05-20',status:'processing',
+     logs:[{time:'2025-05-20 11:00',operator:'赵安全',action:'发起召回',detail:'出厂检测发现刀片紧固件扭矩偏低，通知45台用户返厂加固'},{time:'2025-05-28 15:30',operator:'赵安全',action:'进度更新',detail:'已完成32台设备检修，剩余13台预计6月5日前完成'}]},
+  ],
+  warrantyData: [
+    {id:1,manufacturer:'东风农机集团有限公司',level:'premium',period:'整机3年或3000小时',coverage:'发动机、变速箱、液压系统、传动轴、电气系统',response:'省内24小时 / 省外48小时',updateDate:'2025-02-15'},
+    {id:2,manufacturer:'常发农机制造股份有限公司',level:'extended',period:'整机2年或2000小时',coverage:'发动机、变速箱、主要液压部件',response:'省内24小时 / 省外72小时',updateDate:'2025-01-20'},
+    {id:3,manufacturer:'沃得农机装备有限公司',level:'premium',period:'整机3年或3600小时',coverage:'整机全系统覆盖（含电气、液压、动力总成、作业装置）',response:'省内12小时 / 省外48小时',updateDate:'2025-03-08'},
+    {id:4,manufacturer:'久保田农机(江苏)有限公司',level:'premium',period:'整机2年或1500小时',coverage:'发动机、液压系统、插植机构、割台总成',response:'省内24小时 / 省外48小时',updateDate:'2025-02-28'},
+    {id:5,manufacturer:'江苏农丰机械制造厂',level:'standard',period:'整机1年或800小时',coverage:'发动机、变速箱',response:'省内48小时 / 省外72小时',updateDate:'2025-04-10'},
+  ]
+};
+
+// ==================== STATE ====================
+let currentPage = 'buyer';
+let currentEditId = null;
+let currentDetailId = null;
+let pageStates = {
+  buyer: { search:'', authStatus:'', status:'', dateStart:'', dateEnd:'', page:1, pageSize:10, selectedIds: new Set() },
+  dealer: { search:'', certStatus:'', level:'', region:'', salesRange:'', creditRange:'', subsidyQual:'', page:1, pageSize:10, selectedIds: new Set() },
+  manufacturer: { search:'', auditStatus:'', coverage:'', complaint:'', page:1, pageSize:10, activeTab:'list' },
+};
+
+// ==================== INIT ====================
+function init() {
+  renderAllPages();
+  bindSidebarEvents();
+  bindFilterEvents();
+}
+init();
+
+function bindSidebarEvents() {
+  document.querySelectorAll('.sidebar .menu-item[data-group="user"]').forEach(item => {
+    item.addEventListener('click', function() {
+      this.classList.toggle('expanded');
+      const sub = this.parentElement.querySelector('.sub-menu');
+      sub.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('.sidebar .menu-item[data-page]').forEach(item => {
+    item.addEventListener('click', function() {
+      const page = this.dataset.page;
+      if (!page || page === currentPage) return;
+      // Update sidebar active
+      document.querySelectorAll('.sidebar .menu-item').forEach(m => m.classList.remove('active'));
+      this.classList.add('active');
+      const parentGroup = this.closest('.sub-menu');
+      if (parentGroup) {
+        const parentItem = parentGroup.parentElement.querySelector('.menu-item[data-group]');
+        if (parentItem) parentItem.classList.add('active');
+      }
+      // Switch page
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-'+page).classList.add('active');
+      currentPage = page;
+      renderTable(page);
+      renderPagination(page);
+    });
+  });
+}
+
+function bindFilterEvents() {
+  ['buyer','dealer','manufacturer'].forEach(page => {
+    const s = document.getElementById(page+'-search');
+    if (s) s.addEventListener('input', debounce(() => { pageStates[page].search = s.value; pageStates[page].page=1; if(page==='dealer'||page==='buyer') pageStates[page].selectedIds.clear(); renderTable(page); renderPagination(page); }, 300));
+    ['-auth-status','-status','-audit-status'].forEach(suffix => {
+      const el = document.getElementById(page+suffix);
+      if (el) el.addEventListener('change', () => {
+        const key = suffix === '-auth-status' ? 'authStatus' : suffix === '-audit-status' ? 'auditStatus' : 'status';
+        pageStates[page][key] = el.value;
+        pageStates[page].page=1;
+        renderTable(page);
+        renderPagination(page);
+      });
+    });
+    ['-date-start','-date-end'].forEach(suffix => {
+      const el = document.getElementById(page+suffix);
+      if (el) el.addEventListener('change', () => {
+        const key = suffix === '-date-start' ? 'dateStart' : 'dateEnd';
+        pageStates[page][key] = el.value;
+        pageStates[page].page=1;
+        renderTable(page);
+        renderPagination(page);
+      });
+    });
+  });
+  // Dealer-specific filter bindings
+  const dealerFilterKeys = {
+    'dealer-cert-status': 'certStatus',
+    'dealer-level': 'level',
+    'dealer-region': 'region',
+    'dealer-sales-range': 'salesRange',
+    'dealer-credit-range': 'creditRange',
+    'dealer-subsidy-qual': 'subsidyQual'
+  };
+  Object.entries(dealerFilterKeys).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => {
+      pageStates.dealer[key] = el.value;
+      pageStates.dealer.page = 1;
+      pageStates.dealer.selectedIds.clear();
+      renderTable('dealer');
+      renderPagination('dealer');
+    });
+  });
+  // Manufacturer filter bindings
+  const mfgrFilterKeys = {
+    'mfgr-audit-status': 'auditStatus',
+    'mfgr-coverage': 'coverage',
+    'mfgr-complaint': 'complaint'
+  };
+  Object.entries(mfgrFilterKeys).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => {
+      pageStates.manufacturer[key] = el.value;
+      pageStates.manufacturer.page = 1;
+      renderTable('manufacturer');
+      renderPagination('manufacturer');
+    });
+  });
+}
+
+function debounce(fn, ms) {
+  let timer;
+  return function(...args) { clearTimeout(timer); timer = setTimeout(() => fn.apply(this, args), ms); };
+}
+
+// ==================== FILTER DATA ====================
+function getFilteredData(page) {
+  let data = [...(mockData[page] || [])];
+  const s = pageStates[page];
+  if (s.search) {
+    const kw = s.search.toLowerCase();
+    const fields = pageConfig[page].searchFields;
+    data = data.filter(row => fields.some(f => String(row[f]||'').toLowerCase().includes(kw)));
+  }
+  if (s.authStatus) data = data.filter(r => r.authStatus === s.authStatus);
+  if (s.auditStatus) data = data.filter(r => r.auditStatus === s.auditStatus);
+  if (s.certStatus) data = data.filter(r => r.auditStatus === s.certStatus);
+  if (s.status) data = data.filter(r => r.status === s.status);
+  if (s.creditRange) {
+    if (s.creditRange === 'gt900') data = data.filter(r => r.creditScore >= 900);
+    else if (s.creditRange === '800-900') data = data.filter(r => r.creditScore >= 800 && r.creditScore < 900);
+    else if (s.creditRange === '700-800') data = data.filter(r => r.creditScore >= 700 && r.creditScore < 800);
+  }
+  if (s.level) data = data.filter(r => r.level === s.level);
+  if (s.region) data = data.filter(r => r.region && r.region.startsWith(s.region));
+  if (s.salesRange) {
+    if (s.salesRange === 'lt100') data = data.filter(r => r.salesAmount < 100);
+    else if (s.salesRange === '100-500') data = data.filter(r => r.salesAmount >= 100 && r.salesAmount < 500);
+    else if (s.salesRange === '500-1000') data = data.filter(r => r.salesAmount >= 500 && r.salesAmount < 1000);
+    else if (s.salesRange === 'gt1000') data = data.filter(r => r.salesAmount >= 1000);
+  }
+  if (s.subsidyQual) data = data.filter(r => r.subsidyQual === s.subsidyQual);
+  // Manufacturer filters
+  if (s.auditStatus) data = data.filter(r => r.auditStatus === s.auditStatus);
+  if (s.coverage === 'qualified') data = data.filter(r => r.coverageQualified === true);
+  if (s.coverage === 'unqualified') data = data.filter(r => r.coverageQualified === false);
+  if (s.complaint === 'low') data = data.filter(r => r.complaintRate < 1);
+  if (s.complaint === 'high') data = data.filter(r => r.complaintRate >= 1);
+  return data;
+}
+
+// ==================== RENDER TABLE ====================
+function renderTable(page) {
+  const filtered = getFilteredData(page);
+  const s = pageStates[page];
+  const start = (s.page - 1) * s.pageSize;
+  const paged = filtered.slice(start, start + s.pageSize);
+  const wrapId = page === 'buyer' ? 'buyer-table-wrap' : page === 'dealer' ? 'dealer-table-wrap' : 'mfgr-table-wrap';
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+
+  if (filtered.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <p>暂无数据</p>
+      <p style="font-size:12px;margin-top:4px">当前筛选条件下没有匹配的记录</p>
+    </div>`;
+    document.getElementById(page === 'buyer' ? 'buyer-pagination' : page === 'dealer' ? 'dealer-pagination' : 'mfgr-pagination').innerHTML = '';
+    return;
+  }
+
+  const cols = pageConfig[page].columns;
+  let html = '<table><thead><tr>';
+  if (page === 'dealer' || page === 'buyer') {
+    const selectAllFn = page === 'dealer' ? 'toggleSelectAllDealer' : 'toggleSelectAllBuyer';
+    html += `<th style="width:40px;text-align:center"><input type="checkbox" id="${page}-select-all" onchange="${selectAllFn}(this.checked)" title="全选" style="cursor:pointer"></th>`;
+    cols.forEach(c => { html += `<th>${c}</th>`; });
+  } else {
+    cols.forEach(c => { html += `<th>${c}</th>`; });
+  }
+  html += '</tr></thead><tbody>';
+
+  paged.forEach((row, idx) => {
+    html += '<tr>';
+    if (page === 'dealer' || page === 'buyer') {
+      const checked = pageStates[page].selectedIds.has(row.id) ? ' checked' : '';
+      const toggleFn = page === 'dealer' ? 'toggleDealerRow' : 'toggleBuyerRow';
+      html += `<td style="text-align:center"><input type="checkbox" class="${page}-row-cb" data-id="${row.id}" onchange="${toggleFn}(this)"${checked} style="cursor:pointer"></td>`;
+    } else {
+      html += `<td>${start + idx + 1}</td>`;
+    }
+    if (page === 'buyer') {
+      html += `<td>${row.name}</td>`;
+      html += `<td>${row.phone}</td>`;
+      html += `<td>${row.idCard}</td>`;
+      html += `<td>${row.region}</td>`;
+      html += `<td>${renderTag(row.authStatus === 'certified' ? '已认证' : '未认证', row.authStatus === 'certified' ? 'success' : 'warning')}</td>`;
+      html += `<td class="text-center">${row.machineCount}</td>`;
+      html += `<td>${row.regDate}</td>`;
+      html += `<td>${renderTag(row.status === 'normal' ? '正常' : '冻结', row.status === 'normal' ? 'success' : 'danger')}</td>`;
+    } else if (page === 'dealer') {
+      const levelTag = {core:'核心',standard:'标准',observe:'观察期',warning:'预警'};
+      const levelColor = {core:'#7C3AED',standard:'var(--primary)',observe:'var(--warning)',warning:'var(--danger)'};
+      const levelBg = {core:'#EDE4F8',standard:'#DEE9FC',observe:'#FFECD6',warning:'#FFE8E8'};
+      html += `<td>${row.legalPerson}<br><span style="font-size:12px;color:var(--text-tertiary)">${row.legalPhone}</span><br><span style="display:inline-block;margin-top:4px;padding:1px 8px;border-radius:3px;font-size:11px;font-weight:500;color:${levelColor[row.level]};background:${levelBg[row.level]}">${levelTag[row.level]||''}</span></td>`;
+      html += `<td>${row.region}</td>`;
+      html += `<td>授权${row.brandCount}品牌<br><span style="font-size:12px;color:var(--text-secondary)">在售${row.onSale}/下架${row.offSale}/待审${row.pendingReview}</span></td>`;
+      html += `<td>${row.orderCount}单 <span style="color:var(--success);font-weight:600">￥${row.salesAmount.toFixed(1)}万</span></td>`;
+      html += `<td><span style="color:var(--warning);font-weight:600">￥${row.subsidyAmount.toFixed(1)}万</span> <span style="color:var(--text-secondary);font-size:12px">占比${row.subsidyRatio.toFixed(1)}%</span></td>`;
+      html += `<td>${row.subsidyQual === 'yes' ? '<span style="color:#1A7A3A;background:#E0F5E8;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500">有资质</span>' : '<span style="color:var(--text-tertiary);background:var(--bg-page);padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500">无资质</span>'}</td>`;
+      html += `<td class="text-center">${row.creditScore}</td>`;
+      html += `<td class="text-center"><span style="color:var(--success)">${row.complianceRate.toFixed(1)}%</span></td>`;
+      html += `<td class="text-center"><span style="color:var(--success)">${row.complaintRate.toFixed(1)}%</span></td>`;
+      html += `<td>${row.status === 'normal' ? '<span style="color:#1A7A3A;background:#E0F5E8;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500">已认证</span>' : '<span style="color:var(--text-tertiary);background:var(--bg-page);padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500">已禁用</span>'}</td>`;
+    } else if (page === 'manufacturer') {
+      // 企业信息
+      html += `<td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:6px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🏭</div><div><div style="font-weight:500;color:var(--text-primary)">${row.companyName}</div><div style="font-size:12px;color:var(--text-secondary)">${row.legalPerson} · <span style="color:var(--text-tertiary)">合作经销商</span> ${row.dealerCount}家</div></div></div></td>`;
+      // 旗下品牌
+      html += '<td>';
+      (row.brands||[]).forEach(b => {
+        html += `<span class="brand-tag" style="background:${b.color}15;color:${b.color};border:1px solid ${b.color}30">${b.name} <span style="font-size:10px;opacity:0.7">${b.nameEn}</span></span>`;
+      });
+      html += '</td>';
+      // 产品合规
+      html += `<td><div style="font-size:12px;line-height:1.8"><span style="color:var(--text-secondary)">总数</span> <b>${row.totalProducts}</b> / <span style="color:var(--text-secondary)">已鉴定</span> <b style="color:var(--success)">${row.certifiedProducts}</b> / <span style="color:var(--text-secondary)">补贴目录</span> <b style="color:var(--primary)">${row.catalogProducts}</b></div></td>`;
+      // 鉴定覆盖率
+      const covOk = row.coverageQualified;
+      html += `<td><span style="font-weight:600;color:${covOk?'var(--success)':'var(--danger)'}">${row.coverageRate.toFixed(1)}%</span>${covOk?' <span style="color:var(--success);font-size:12px">✅ 达标</span>':' <span style="color:var(--danger);font-size:12px">⚠️ 未达标</span>'}</td>`;
+      // 质量指标
+      html += `<td><div style="font-size:12px;line-height:1.8"><span style="color:var(--text-secondary)">投诉率</span> <span style="color:${row.complaintRate>=1?'var(--warning)':'var(--success)'};font-weight:500">${row.complaintRate.toFixed(1)}%</span><br><span style="color:var(--text-secondary)">召回次数</span> <span style="color:${row.recallCount>0?'var(--danger)':'var(--text-secondary)'};font-weight:500">${row.recallCount}次</span></div></td>`;
+      // 质保政策
+      const wlLabel = {premium:'优质质保',extended:'延长质保',standard:'标准质保'};
+      const wlColor = {premium:'#7C3AED',extended:'var(--primary)',standard:'var(--text-secondary)'};
+      const wlBg = {premium:'#EDE4F8',extended:'var(--primary-light)',standard:'var(--bg-page)'};
+      html += `<td><span style="display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;color:${wlColor[row.warrantyLevel]};background:${wlBg[row.warrantyLevel]}">${wlLabel[row.warrantyLevel]||''}</span></td>`;
+      // 认证状态
+      const asLabel = {approved:'已认证',pending:'待审核',rejected:'已驳回'};
+      const asColor = {approved:'var(--success)',pending:'var(--warning)',rejected:'var(--danger)'};
+      const asBg = {approved:'var(--success-bg)',pending:'var(--warning-bg)',rejected:'var(--danger-bg)'};
+      html += `<td><span style="display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;color:${asColor[row.auditStatus]};background:${asBg[row.auditStatus]}">${asLabel[row.auditStatus]||''}</span><br><span style="font-size:11px;color:var(--text-tertiary)">有效期至 ${row.certExpire}</span></td>`;
+    }
+    html += '<td><div class="action-links">';
+    html += `<a onclick="openDetailModal('${page}',${row.id})">查看详情</a>`;
+    if (page === 'manufacturer') html += `<a onclick="showToast('合规审核功能开发中','warning')">合规审核</a>`;
+    if (page !== 'buyer' && page !== 'dealer') html += `<a onclick="openEditModal('${page}',${row.id})">编辑</a>`;
+    const isNormal = row.status === 'normal';
+    if (page === 'buyer') {
+      html += `<a class="${isNormal ? 'danger' : 'success'}" onclick="toggleStatus('${page}',${row.id})">${isNormal ? '冻结' : '启用'}</a>`;
+    } else {
+      html += `<a class="${isNormal ? 'danger' : 'success'}" onclick="toggleStatus('${page}',${row.id})">${isNormal ? '禁用' : '启用'}</a>`;
+    }
+    html += '</div></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function renderBuyerStats() {
+  const data = mockData.buyer || [];
+  const total = data.length;
+  const certified = data.filter(r => r.authStatus === 'certified').length;
+  const disabled = data.filter(r => r.status === 'frozen').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-certified').textContent = certified;
+  document.getElementById('stat-disabled').textContent = disabled;
+}
+
+function renderDealerStats() {
+  const data = mockData.dealer || [];
+  const total = data.length;
+  const approved = data.filter(r => r.auditStatus === 'approved').length;
+  const active = data.filter(r => r.status === 'normal').length;
+  const pending = data.filter(r => r.auditStatus === 'pending').length;
+
+  document.getElementById('dstat-total').textContent = total;
+  document.getElementById('dstat-total-sub').textContent = '同比 ↑12.5%';
+  document.getElementById('dstat-certified').textContent = approved;
+  document.getElementById('dstat-certified-sub').textContent = '占比 ' + (total ? Math.round(approved / total * 100) : 0) + '%';
+  document.getElementById('dstat-active').textContent = active;
+  document.getElementById('dstat-pending').textContent = pending;
+  document.getElementById('dstat-compliance').textContent = '96.8%';
+  document.getElementById('dstat-complaint').textContent = '2.1%';
+  document.getElementById('dstat-settlement').textContent = '￥2,340万';
+}
+
+function filterPendingDealers() {
+  // Switch to dealer page if not already active
+  if (currentPage !== 'dealer') {
+    document.querySelectorAll('.sidebar .menu-item').forEach(m => m.classList.remove('active'));
+    const dealerItem = document.querySelector('.sidebar .menu-item[data-page="dealer"]');
+    if (dealerItem) dealerItem.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-dealer').classList.add('active');
+    currentPage = 'dealer';
+  }
+  // Toggle: if already filtered to pending, reset to default; otherwise set to pending
+  const certSelect = document.getElementById('dealer-cert-status');
+  if (pageStates.dealer.certStatus === 'pending') {
+    if (certSelect) certSelect.value = '';
+    pageStates.dealer.certStatus = '';
+  } else {
+    if (certSelect) certSelect.value = 'pending';
+    pageStates.dealer.certStatus = 'pending';
+  }
+  pageStates.dealer.page = 1;
+  renderTable('dealer');
+  renderPagination('dealer');
+}
+
+function toggleSelectAllDealer(checked) {
+  const filtered = getFilteredData('dealer');
+  const s = pageStates.dealer;
+  const start = (s.page - 1) * s.pageSize;
+  const paged = filtered.slice(start, start + s.pageSize);
+  if (checked) {
+    paged.forEach(r => pageStates.dealer.selectedIds.add(r.id));
+  } else {
+    paged.forEach(r => pageStates.dealer.selectedIds.delete(r.id));
+  }
+  renderTable('dealer');
+}
+
+function toggleDealerRow(cb) {
+  const id = parseInt(cb.dataset.id);
+  if (cb.checked) {
+    pageStates.dealer.selectedIds.add(id);
+  } else {
+    pageStates.dealer.selectedIds.delete(id);
+  }
+}
+
+function renderTag(text, type) {
+  return `<span class="tag tag-${type}">${text}</span>`;
+}
+
+// ==================== BUYER CHECKBOX ====================
+function toggleSelectAllBuyer(checked) {
+  const filtered = getFilteredData('buyer');
+  const s = pageStates.buyer;
+  const start = (s.page - 1) * s.pageSize;
+  const paged = filtered.slice(start, start + s.pageSize);
+  if (checked) {
+    paged.forEach(r => pageStates.buyer.selectedIds.add(r.id));
+  } else {
+    paged.forEach(r => pageStates.buyer.selectedIds.delete(r.id));
+  }
+  renderTable('buyer');
+}
+
+function toggleBuyerRow(cb) {
+  const id = parseInt(cb.dataset.id);
+  if (cb.checked) {
+    pageStates.buyer.selectedIds.add(id);
+  } else {
+    pageStates.buyer.selectedIds.delete(id);
+  }
+}
+
+// ==================== PAGINATION ====================
+function renderPagination(page) {
+  const filtered = getFilteredData(page);
+  const s = pageStates[page];
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / s.pageSize) || 1;
+  const elId = page === 'buyer' ? 'buyer-pagination' : page === 'dealer' ? 'dealer-pagination' : 'mfgr-pagination';
+  const el = document.getElementById(elId);
+  if (!el || total === 0) { if (el) el.innerHTML = ''; return; }
+
+  let html = `<span class="total">共 <b>${total}</b> 条记录</span>`;
+  html += '<div class="page-controls">';
+  html += `<button class="page-btn ${s.page <= 1 ? 'disabled' : ''}" onclick="goPage('${page}',${s.page-1})" ${s.page <= 1 ? 'disabled' : ''}>‹</button>`;
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages <= 7 || i === 1 || i === totalPages || Math.abs(i - s.page) <= 1) {
+      html += `<button class="page-btn ${i === s.page ? 'active' : ''}" onclick="goPage('${page}',${i})">${i}</button>`;
+    } else if (i === 2 && s.page > 4) {
+      html += '<button class="page-btn disabled">…</button>';
+    } else if (i === totalPages - 1 && s.page < totalPages - 3) {
+      html += '<button class="page-btn disabled">…</button>';
+    }
+  }
+
+  html += `<button class="page-btn ${s.page >= totalPages ? 'disabled' : ''}" onclick="goPage('${page}',${s.page+1})" ${s.page >= totalPages ? 'disabled' : ''}>›</button>`;
+  html += '<div class="page-size">';
+  html += `<select onchange="changePageSize('${page}',this.value)">`;
+  [10, 20, 50, 100].forEach(n => {
+    html += `<option value="${n}" ${s.pageSize === n ? 'selected' : ''}>${n}条/页</option>`;
+  });
+  html += '</select></div></div>';
+  el.innerHTML = html;
+}
+
+function goPage(page, p) {
+  const totalPages = Math.ceil(getFilteredData(page).length / pageStates[page].pageSize) || 1;
+  if (p < 1 || p > totalPages) return;
+  pageStates[page].page = p;
+  renderTable(page);
+  renderPagination(page);
+}
+
+function changePageSize(page, size) {
+  pageStates[page].pageSize = parseInt(size);
+  pageStates[page].page = 1;
+  renderTable(page);
+  renderPagination(page);
+}
+
+// ==================== RENDER ALL ====================
+function renderAllPages() {
+  ['buyer','dealer'].forEach(page => {
+    renderTable(page);
+    renderPagination(page);
+  });
+  // Manufacturer: only render list tab table on init
+  renderTable('manufacturer');
+  renderPagination('manufacturer');
+  renderRecallTable();
+  renderWarrantyCards();
+  renderBuyerStats();
+  renderDealerStats();
+  renderManufacturerStats();
+}
+
+// ==================== MODAL: ADD/EDIT ====================
+function openAddModal(page) {
+  currentEditId = null;
+  document.getElementById('edit-modal-title').textContent = '新增 — ' + pageConfig[page].name;
+  document.getElementById('edit-modal').className = 'modal' + (page !== 'buyer' ? ' wide' : '');
+  renderEditTabs(page, null);
+  document.getElementById('edit-modal-overlay').classList.add('show');
+}
+
+function openEditModal(page, id) {
+  currentEditId = id;
+  const row = mockData[page].find(r => r.id === id);
+  document.getElementById('edit-modal-title').textContent = '编辑 — ' + pageConfig[page].name;
+  document.getElementById('edit-modal').className = 'modal' + (page !== 'buyer' ? ' wide' : '');
+  renderEditTabs(page, row);
+  document.getElementById('edit-modal-overlay').classList.add('show');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal-overlay').classList.remove('show');
+  currentEditId = null;
+}
+
+function renderEditTabs(page, data) {
+  const tabs = pageConfig[page].editTabs;
+  const tabsEl = document.getElementById('edit-tabs');
+  const contentsEl = document.getElementById('edit-tab-contents');
+
+  tabsEl.innerHTML = tabs.map((t, i) =>
+    `<div class="tab-item ${i===0?'active':''}" data-tab-key="${t.key}" onclick="switchEditTab('${t.key}')">${t.label}</div>`
+  ).join('');
+
+  contentsEl.innerHTML = tabs.map((t, i) => {
+    let body = '';
+    if (t.type === 'upload') {
+      body = `<div class="upload-area"><div class="upload-icon">📎</div><p>点击或拖拽上传${t.label}</p><p style="font-size:12px;margin-top:4px">支持 JPG/PNG/PDF，单文件不超过10MB</p></div>`;
+    } else if (t.fields) {
+      const cols = t.cols || 2;
+      const rows = [];
+      let fi = 0;
+      while (fi < t.fields.length) {
+        let rowHtml = `<div class="form-row${cols === 3 ? ' form-row-3' : ''}">`;
+        let spanUsed = 0;
+        while (fi < t.fields.length && spanUsed < cols) {
+          const f = t.fields[fi];
+          const span = f.colSpan || 1;
+          if (spanUsed + span > cols) break;
+          rowHtml += `<div class="form-group"${span > 1 ? ` style="grid-column:span ${span}"` : ''}>`;
+          rowHtml += `<label>${f.label}${f.required ? '<span class="required">*</span>' : ''}</label>`;
+          if (f.type === 'select') {
+            rowHtml += `<select class="form-control" id="edit-${t.key}-${f.name}">`;
+            f.options.forEach(o => {
+              const selected = data && data[f.name] === o.v ? ' selected' : '';
+              rowHtml += `<option value="${o.v}"${selected}>${o.l}</option>`;
+            });
+            rowHtml += '</select>';
+          } else if (f.type === 'date') {
+            rowHtml += `<input type="date" class="form-control" id="edit-${t.key}-${f.name}" value="${data ? data[f.name] || '' : ''}">`;
+          } else if (f.type === 'cascader') {
+            rowHtml += `<input type="text" class="form-control" id="edit-${t.key}-${f.name}" value="${data ? data[f.name] || '' : ''}" placeholder="省/市/区">`;
+          } else {
+            rowHtml += `<input type="text" class="form-control" id="edit-${t.key}-${f.name}" value="${data ? data[f.name] || '' : ''}">`;
+          }
+          rowHtml += '</div>';
+          spanUsed += span;
+          fi++;
+        }
+        rowHtml += '</div>';
+        rows.push(rowHtml);
+      }
+      body = rows.join('');
+    }
+    return `<div class="tab-content ${i===0?'active':''}" data-tab-key="${t.key}">${body}</div>`;
+  }).join('');
+}
+
+function switchEditTab(key) {
+  document.querySelectorAll('#edit-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelector(`#edit-tabs .tab-item[data-tab-key="${key}"]`).classList.add('active');
+  document.querySelectorAll('#edit-tab-contents .tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`#edit-tab-contents .tab-content[data-tab-key="${key}"]`).classList.add('active');
+}
+
+function handleSave() {
+  showToast('保存成功！', 'success');
+  closeEditModal();
+}
+
+// ==================== MODAL: DETAIL ====================
+function openDetailModal(page, id) {
+  currentDetailId = id;
+  const row = mockData[page].find(r => r.id === id);
+  document.getElementById('detail-modal-title').textContent = '详情 — ' + pageConfig[page].name;
+  document.getElementById('detail-modal').className = 'modal wide';
+  renderDetailTabs(page, row);
+  document.getElementById('detail-modal-overlay').classList.add('show');
+}
+
+function closeDetailModal() {
+  document.getElementById('detail-modal-overlay').classList.remove('show');
+  currentDetailId = null;
+}
+
+function renderDetailTabs(page, data) {
+  const tabs = pageConfig[page].detailTabs;
+  const tabsEl = document.getElementById('detail-tabs');
+  const contentsEl = document.getElementById('detail-tab-contents');
+
+  tabsEl.innerHTML = tabs.map((t, i) =>
+    `<div class="tab-item ${i===0?'active':''}" data-tab-key="${t.key}" onclick="switchDetailTab('${t.key}')">${t.label}</div>`
+  ).join('');
+
+  contentsEl.innerHTML = tabs.map((t, i) => {
+    let body = '';
+    if (t.type === 'info') {
+      body = '<div class="info-grid">';
+      if (page === 'buyer') {
+        body += infoRow('购机人姓名', data.name);
+        body += infoRow('手机号', data.phone);
+        body += infoRow('身份证号', data.idCard);
+        body += infoRow('所在地区', data.region);
+        body += infoRow('实名认证状态', data.authStatus === 'certified' ? '已认证' : '未认证');
+        body += infoRow('名下农机数量', data.machineCount + '台');
+        body += infoRow('注册时间', data.regDate);
+        body += infoRow('用户状态', data.status === 'normal' ? '<span class="tag tag-success">正常</span>' : '<span class="tag tag-danger">冻结</span>');
+      } else if (page === 'dealer') {
+        body += infoRow('经销商企业名称', data.companyName);
+        body += infoRow('法人姓名', data.legalPerson);
+        body += infoRow('法人电话', data.legalPhone);
+        body += infoRow('所在地区', data.region);
+        body += infoRow('授权品牌数', data.brandCount + '个');
+        body += infoRow('在售/下架/待审', `${data.onSale}/${data.offSale}/${data.pendingReview}`);
+        body += infoRow('订单数/销售额', `${data.orderCount}单 / ￥${data.salesAmount.toFixed(1)}万`);
+        body += infoRow('补贴总额/占比', `￥${data.subsidyAmount.toFixed(1)}万 / ${data.subsidyRatio.toFixed(1)}%`);
+        body += infoRow('补贴待办资质', data.subsidyQual === 'yes' ? '有资质' : '无资质');
+        body += infoRow('信用评分', data.creditScore);
+        body += infoRow('合规率', data.complianceRate.toFixed(1) + '%');
+        body += infoRow('投诉率', data.complaintRate.toFixed(1) + '%');
+        body += infoRow('审核状态', renderTag(data.auditStatus === 'approved' ? '已通过' : data.auditStatus === 'pending' ? '待审核' : '驳回', data.auditStatus === 'approved' ? 'success' : data.auditStatus === 'pending' ? 'primary' : 'danger'));
+        body += infoRow('经营状态', data.status === 'normal' ? '<span class="tag tag-success">正常</span>' : '<span class="tag tag-default">禁用</span>');
+      } else if (page === 'manufacturer') {
+        body += infoRow('制造企业名称', data.companyName);
+        body += infoRow('生产许可证编号', data.licenseNo);
+        body += infoRow('法人', data.legalPerson);
+        body += infoRow('联系电话', data.phone);
+        body += infoRow('生产厂址', data.address);
+        body += infoRow('可生产农机品目', data.categories);
+        const expired = new Date(data.certExpire) < new Date();
+        body += infoRow('资质有效期', `<span class="${expired?'expired-highlight':''}">${data.certExpire}${expired?' ⚠️已过期':''}</span>`);
+        body += infoRow('合作经销商数量', data.dealerCount + '家');
+        body += infoRow('鉴定覆盖率', data.coverageRate ? data.coverageRate.toFixed(1) + '%' : '--');
+        body += infoRow('质量投诉率', data.complaintRate ? data.complaintRate.toFixed(1) + '%' : '--');
+        body += infoRow('召回次数', (data.recallCount||0) + '次');
+        const asLabel2 = {approved:'已认证',pending:'待审核',rejected:'已驳回'};
+        const asTag2 = {approved:'success',pending:'warning',rejected:'danger'};
+        body += infoRow('认证状态', renderTag(asLabel2[data.auditStatus]||'未知', asTag2[data.auditStatus]||'default'));
+        body += infoRow('企业状态', data.status === 'normal' ? '<span class="tag tag-success">正常</span>' : '<span class="tag tag-default">禁用</span>');
+      }
+      body += '</div>';
+    } else if (t.type === 'table') {
+      body = '<div class="sub-table"><table><thead><tr>';
+      t.columns.forEach(c => body += `<th>${c}</th>`);
+      body += '</tr></thead><tbody>';
+      // Demo rows
+      const demoRows = page === 'buyer' ? [
+        ['东方红LX1504拖拉机','LX1504','2024-06-15','南京农机销售有限公司','¥18,500','已发放'],
+        ['沃得收割机4LZ-8.0','4LZ-8.0','2024-03-20','苏州丰收农机贸易公司','¥25,000','审核中'],
+        ['久保田插秧机SPV-6CMD','SPV-6CMD','2024-09-01','南通滨江农机销售公司','¥12,000','已发放'],
+      ] : page === 'dealer' ? [
+        ['东风LX1504拖拉机','LX1504-2024','东风农机','¥156,000','2024-05-10','已通过'],
+        ['沃得收割机4LZ-8.0','4LZ-8.0-2024','沃得农机','¥218,000','2024-07-20','已通过'],
+        ['常发CFH2004拖拉机','CFH2004','常发农机','¥189,000','2024-08-15','待审核'],
+      ] : [
+        ['拖拉机','70-240马力','42','40','35','95.2%'],
+        ['收割机','喂入量5-12kg/s','38','36','32','94.7%'],
+        ['插秧机','4-8行','30','28','25','93.3%'],
+        ['旋耕机','1.5-3.5m','46','45','36','97.8%'],
+      ];
+      demoRows.forEach(r => {
+        body += '<tr>';
+        r.forEach(c => body += `<td>${c}</td>`);
+        body += '</tr>';
+      });
+      body += '</tbody></table></div>';
+    } else if (t.type === 'files') {
+      body = '<div class="file-list">';
+      if (page === 'buyer') {
+        body += fileItem('身份证正面.jpg', '已上传', true);
+        body += fileItem('身份证反面.jpg', '已上传', true);
+        body += fileItem('手持身份证照片.jpg', '已上传', true);
+      } else if (page === 'dealer') {
+        body += fileItem('营业执照.jpg', '已上传', true);
+        body += fileItem('法人身份证正面.jpg', '已上传', true);
+        body += fileItem('法人身份证反面.jpg', '已上传', true);
+        body += fileItem('授权经营证书.pdf', '已上传', true);
+      }
+      body += '</div>';
+    }
+    return `<div class="tab-content ${i===0?'active':''}" data-tab-key="${t.key}">${body}</div>`;
+  }).join('');
+}
+
+function switchDetailTab(key) {
+  document.querySelectorAll('#detail-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelector(`#detail-tabs .tab-item[data-tab-key="${key}"]`).classList.add('active');
+  document.querySelectorAll('#detail-tab-contents .tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`#detail-tab-contents .tab-content[data-tab-key="${key}"]`).classList.add('active');
+}
+
+function infoRow(label, value) {
+  return `<div class="info-item"><span class="info-label">${label}</span><span class="info-value">${value}</span></div>`;
+}
+
+function fileItem(name, status, canPreview) {
+  return `<div class="file-item">
+    <span class="file-icon">📄</span>
+    <span class="file-name">${name}</span>
+    <span class="file-status tag tag-success">${status}</span>
+    ${canPreview ? '<span class="file-preview">👁 预览</span>' : ''}
+  </div>`;
+}
+
+// ==================== TOGGLE STATUS ====================
+function toggleStatus(page, id) {
+  const row = mockData[page].find(r => r.id === id);
+  if (!row) return;
+  const newStatus = row.status === 'normal' ? (page === 'buyer' ? 'frozen' : 'disabled') : 'normal';
+  const actionText = row.status === 'normal' ? (page === 'buyer' ? '冻结' : '禁用') : '启用';
+  if (confirm(`确认${actionText}该${pageConfig[page].name.replace('管理','')}？`)) {
+    row.status = newStatus;
+    renderTable(page);
+    showToast(`${actionText}成功！`, 'success');
+  }
+}
+
+// ==================== EXPORT ====================
+function handleExport(page) {
+  if (page === 'dealer') {
+    if (pageStates.dealer.selectedIds.size === 0) {
+      showToast('请先勾选需要导出的用户', 'warning');
+      return;
+    }
+    const targets = mockData.dealer.filter(r => pageStates.dealer.selectedIds.has(r.id));
+    showToast(`正在导出 ${targets.length} 条记录，请稍候…`, 'success');
+  } else {
+    showToast('正在导出Excel，请稍候…', 'success');
+  }
+  setTimeout(() => showToast('导出成功！文件已开始下载', 'success'), 1500);
+}
+
+function handleBatchDisable(page) {
+  let targets;
+  if (page === 'dealer' || page === 'buyer') {
+    if (pageStates[page].selectedIds.size === 0) {
+      showToast('请先勾选需要操作的用户', 'warning');
+      return;
+    }
+    targets = mockData[page].filter(r => pageStates[page].selectedIds.has(r.id));
+  } else {
+    targets = getFilteredData(page);
+  }
+  if (confirm(`确认批量禁用 ${targets.length} 条记录？`)) {
+    targets.forEach(row => { row.status = (page === 'buyer' ? 'frozen' : 'disabled'); });
+    if (page === 'dealer' || page === 'buyer') pageStates[page].selectedIds.clear();
+    renderTable(page);
+    renderPagination(page);
+    showToast(`已批量禁用 ${targets.length} 条记录`, 'success');
+  }
+}
+
+function handleBatchDelete(page) {
+  if (pageStates[page].selectedIds.size === 0) {
+    showToast('请先勾选需要操作的用户', 'warning');
+    return;
+  }
+  const targets = mockData[page].filter(r => pageStates[page].selectedIds.has(r.id));
+  if (confirm(`确认批量删除 ${targets.length} 条记录？此操作不可恢复。`)) {
+    targets.forEach(row => { row._deleted = true; });
+    mockData[page] = mockData[page].filter(r => !r._deleted);
+    pageStates[page].selectedIds.clear();
+    pageStates[page].page = 1;
+    renderTable(page);
+    renderPagination(page);
+    if (page === 'buyer') renderBuyerStats();
+    showToast(`已批量删除 ${targets.length} 条记录`, 'success');
+  }
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + type;
+  setTimeout(() => { toast.className = 'toast'; }, 2000);
+}
+
+// ==================== MANUFACTURER TABS ====================
+function switchManufacturerTab(tab) {
+  pageStates.manufacturer.activeTab = tab;
+  // Update tab UI
+  document.querySelectorAll('#mfgr-tabs .tab-item').forEach(t => t.classList.remove('active'));
+  const targetTab = document.querySelector(`#mfgr-tabs .tab-item[data-mfgr-tab="${tab}"]`);
+  if (targetTab) targetTab.classList.add('active');
+  // Show/hide content
+  document.querySelectorAll('.mfgr-tab-content').forEach(c => c.classList.remove('active'));
+  const targetContent = document.getElementById('mfgr-tab-' + tab);
+  if (targetContent) targetContent.classList.add('active');
+  // Render tab content
+  if (tab === 'list') { renderTable('manufacturer'); renderPagination('manufacturer'); }
+  else if (tab === 'recall') renderRecallTable();
+  else if (tab === 'warranty') renderWarrantyCards();
+}
+
+function resetMfgrFilters() {
+  ['mfgr-audit-status','mfgr-coverage','mfgr-complaint','manufacturer-search'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  pageStates.manufacturer.auditStatus = '';
+  pageStates.manufacturer.coverage = '';
+  pageStates.manufacturer.complaint = '';
+  pageStates.manufacturer.search = '';
+  pageStates.manufacturer.page = 1;
+  renderTable('manufacturer');
+  renderPagination('manufacturer');
+  showToast('筛选条件已重置', 'success');
+}
+
+function filterMfgrByStat(statType) {
+  // Switch to list tab
+  switchManufacturerTab('list');
+  // Reset all filters first
+  ['mfgr-audit-status','mfgr-coverage','mfgr-complaint'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  pageStates.manufacturer.auditStatus = '';
+  pageStates.manufacturer.coverage = '';
+  pageStates.manufacturer.complaint = '';
+  // Apply specific filter
+  if (statType === 'coverage') {
+    pageStates.manufacturer.coverage = 'qualified';
+    const el = document.getElementById('mfgr-coverage'); if (el) el.value = 'qualified';
+  } else if (statType === 'catalog') {
+    // Filter to those with high catalog count - use coverage qualified as proxy
+    pageStates.manufacturer.coverage = 'qualified';
+    const el = document.getElementById('mfgr-coverage'); if (el) el.value = 'qualified';
+  } else if (statType === 'complaint') {
+    pageStates.manufacturer.complaint = 'high';
+    const el = document.getElementById('mfgr-complaint'); if (el) el.value = 'high';
+  } else if (statType === 'pending') {
+    pageStates.manufacturer.auditStatus = 'pending';
+    const el = document.getElementById('mfgr-audit-status'); if (el) el.value = 'pending';
+  }
+  pageStates.manufacturer.page = 1;
+  renderTable('manufacturer');
+  renderPagination('manufacturer');
+}
+
+// ==================== MANUFACTURER STATS ====================
+function renderManufacturerStats() {
+  const data = mockData.manufacturer || [];
+  const total = data.length;
+  const approved = data.filter(r => r.auditStatus === 'approved').length;
+  const pending = data.filter(r => r.auditStatus === 'pending').length;
+  const avgCoverage = total ? (data.reduce((s,r) => s + r.coverageRate, 0) / total) : 0;
+  const totalCatalog = data.reduce((s,r) => s + (r.catalogProducts||0), 0);
+  const complaintWarn = data.filter(r => r.complaintRate >= 1).length;
+  const recallPending = (mockData.recallData||[]).filter(r => r.status !== 'completed').length;
+
+  const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+  setEl('mstat-total', total);
+  setEl('mstat-approved', approved);
+  setEl('mstat-coverage', avgCoverage.toFixed(1) + '%');
+  setEl('mstat-catalog', totalCatalog);
+  setEl('mstat-complaint-warn', complaintWarn);
+  setEl('mstat-recall-pending', recallPending);
+  setEl('mstat-audit-pending', pending);
+
+  // Update recall badge
+  const badge = document.getElementById('mfgr-recall-badge');
+  if (badge) badge.textContent = recallPending;
+}
+
+// ==================== RECALL TABLE ====================
+function renderRecallTable() {
+  const data = mockData.recallData || [];
+  const wrap = document.getElementById('mfgr-recall-table-wrap');
+  if (!wrap) return;
+
+  // Update header counts
+  const totalEl = document.getElementById('recall-total');
+  const pendingEl = document.getElementById('recall-pending-text');
+  if (totalEl) totalEl.textContent = data.length;
+  const pendingCount = data.filter(r => r.status !== 'completed').length;
+  if (pendingEl) pendingEl.textContent = pendingCount + '条待处理';
+
+  if (data.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>暂无召回记录</p></div>`;
+    document.getElementById('mfgr-recall-summary').innerHTML = '';
+    return;
+  }
+
+  let html = '<table><thead><tr>';
+  ['制造商','召回产品','召回原因','影响数量','严重程度','召回日期','处理状态','操作'].forEach(c => html += `<th>${c}</th>`);
+  html += '</tr></thead><tbody>';
+
+  data.forEach(row => {
+    const sevLabel = {severe:'严重',serious:'重要'};
+    const sevTag = {severe:'danger',serious:'warning'};
+    const stLabel = {completed:'已完成',processing:'处理中',pending:'待处理'};
+    const stTag = {completed:'success',processing:'primary',pending:'danger'};
+
+    html += '<tr>';
+    html += `<td>${row.manufacturer}</td>`;
+    html += `<td>${row.product}</td>`;
+    html += `<td style="max-width:200px;white-space:normal;font-size:12px">${row.reason}</td>`;
+    html += `<td class="text-center">${row.affectedCount}台</td>`;
+    html += `<td>${renderTag(sevLabel[row.severity]||'', sevTag[row.severity]||'default')}</td>`;
+    html += `<td>${row.recallDate}</td>`;
+    html += `<td>${renderTag(stLabel[row.status]||'', stTag[row.status]||'default')}</td>`;
+    html += '<td><div class="action-links">';
+    html += `<a onclick="openRecallDetailModal(${row.id})">查看详情</a>`;
+    if (row.status === 'processing' || row.status === 'pending') html += `<a style="color:var(--success)" onclick="openRecallProgressModal(${row.id})">更新进度</a>`;
+    html += '</div></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+
+  // Render summary cards
+  const severe = data.filter(r => r.severity === 'severe').length;
+  const processing = data.filter(r => r.status === 'processing').length;
+  const completed = data.filter(r => r.status === 'completed').length;
+  const rate = data.length ? Math.round(completed / data.length * 100) : 0;
+
+  document.getElementById('mfgr-recall-summary').innerHTML = `
+    <div class="recall-summary-card red-bg">
+      <div class="recall-icon red">❗</div>
+      <div class="recall-info"><div class="recall-num" style="color:var(--danger)">${severe}</div><div class="recall-label">严重召回 · 需重点关注</div></div>
+    </div>
+    <div class="recall-summary-card blue-bg">
+      <div class="recall-icon blue">🔄</div>
+      <div class="recall-info"><div class="recall-num" style="color:var(--primary)">${processing}</div><div class="recall-label">处理中 · 正在跟进</div></div>
+    </div>
+    <div class="recall-summary-card green-bg">
+      <div class="recall-icon green">✅</div>
+      <div class="recall-info"><div class="recall-num" style="color:var(--success)">${completed}</div><div class="recall-label">已完成 · 召回完成率${rate}%</div></div>
+    </div>`;
+}
+
+// ==================== RECALL MODAL LOGIC ====================
+let currentRecallAction = null;
+let currentRecallId = null;
+
+function closeRecallModal() {
+  document.getElementById('recall-modal-overlay').classList.remove('show');
+  currentRecallAction = null;
+  currentRecallId = null;
+}
+
+function openRecallAddModal() {
+  currentRecallAction = 'add';
+  currentRecallId = null;
+  document.getElementById('recall-modal-title').textContent = '新增召回记录';
+  // Build manufacturer options from mockData.manufacturer
+  const mfgrs = (mockData.manufacturer || []).map(m => m.companyName);
+  const mfgrOpts = mfgrs.map(m => `<option value="${m}">${m}</option>`).join('');
+  document.getElementById('recall-modal-body').innerHTML = `
+    <div class="form-row" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group">
+        <label>制造商<span class="required">*</span></label>
+        <select class="form-control" id="recall-manufacturer">${mfgrOpts}</select>
+      </div>
+      <div class="form-group">
+        <label>产品型号<span class="required">*</span></label>
+        <input type="text" class="form-control" id="recall-product" placeholder="请输入产品型号">
+      </div>
+    </div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group">
+        <label>影响数量<span class="required">*</span></label>
+        <input type="number" class="form-control" id="recall-affected" placeholder="请输入影响设备数量" min="1">
+      </div>
+      <div class="form-group">
+        <label>严重程度<span class="required">*</span></label>
+        <select class="form-control" id="recall-severity">
+          <option value="severe">严重</option>
+          <option value="serious">重要</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>召回原因<span class="required">*</span></label>
+      <textarea class="form-control" id="recall-reason" placeholder="请详细描述召回原因及潜在风险" style="height:80px;padding:8px 12px;resize:vertical"></textarea>
+    </div>
+    <div class="form-group">
+      <label>召回日期<span class="required">*</span></label>
+      <input type="date" class="form-control" id="recall-date">
+    </div>`;
+  document.getElementById('recall-modal-footer').innerHTML = `
+    <button class="btn btn-default" onclick="closeRecallModal()">取消</button>
+    <button class="btn btn-primary" onclick="handleRecallSubmit()">提交</button>`;
+  document.getElementById('recall-modal').className = 'modal';
+  document.getElementById('recall-modal-overlay').classList.add('show');
+}
+
+function handleRecallSubmit() {
+  const manufacturer = document.getElementById('recall-manufacturer').value.trim();
+  const product = document.getElementById('recall-product').value.trim();
+  const reason = document.getElementById('recall-reason').value.trim();
+  const affectedCount = parseInt(document.getElementById('recall-affected').value) || 0;
+  const severity = document.getElementById('recall-severity').value;
+  const recallDate = document.getElementById('recall-date').value;
+  if (!manufacturer || !product || !reason || !affectedCount || !recallDate) {
+    showToast('请填写所有必填项', 'warning');
+    return;
+  }
+  const newId = Math.max(0, ...mockData.recallData.map(r => r.id)) + 1;
+  mockData.recallData.push({
+    id: newId, manufacturer, product, reason, affectedCount, severity, recallDate, status: 'pending',
+    logs: [{time: new Date().toISOString().slice(0,16).replace('T',' '), operator:'当前操作员', action:'发起召回', detail: reason}]
+  });
+  closeRecallModal();
+  renderRecallTable();
+  renderManufacturerStats();
+  showToast('召回记录已成功添加', 'success');
+}
+
+function openRecallDetailModal(id) {
+  currentRecallAction = 'detail';
+  currentRecallId = id;
+  const row = mockData.recallData.find(r => r.id === id);
+  if (!row) return;
+  document.getElementById('recall-modal-title').textContent = '召回详情';
+  const sevLabel = {severe:'严重',serious:'重要'};
+  const stLabel = {completed:'已完成',processing:'处理中',pending:'待处理'};
+  const stColor = {completed:'var(--success)',processing:'var(--primary)',pending:'var(--danger)'};
+  const sevColor = {severe:'var(--danger)',serious:'var(--warning)'};
+  let logsHtml = (row.logs||[]).map((l,i) => `
+    <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);${i===0?'border-top:1px solid var(--border)':''}">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);margin-top:6px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-weight:500;color:var(--text-primary)">${l.action}</span>
+          <span style="font-size:12px;color:var(--text-tertiary)">${l.time} · ${l.operator}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">${l.detail}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('recall-modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;padding:16px;background:var(--bg-page);border-radius:8px">
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">制造商</div><div style="font-weight:500">${row.manufacturer}</div></div>
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">召回产品</div><div style="font-weight:500">${row.product}</div></div>
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">影响数量</div><div style="font-weight:500">${row.affectedCount}台</div></div>
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">严重程度</div><span style="display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;color:${sevColor[row.severity]};background:${row.severity==='severe'?'var(--danger-bg)':'var(--warning-bg)'}">${sevLabel[row.severity]||''}</span></div>
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">召回日期</div><div style="font-weight:500">${row.recallDate}</div></div>
+      <div><div style="font-size:12px;color:var(--text-tertiary);margin-bottom:4px">处理状态</div><span style="display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;color:${stColor[row.status]}">${stLabel[row.status]||''}</span></div>
+    </div>
+    <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:8px">召回原因</div>
+    <div style="padding:12px;background:var(--bg-page);border-radius:6px;font-size:13px;color:var(--text-secondary);line-height:1.8;margin-bottom:20px">${row.reason}</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px">📋 处理进度记录</div>
+    <div style="max-height:300px;overflow-y:auto">${logsHtml || '<div style="text-align:center;padding:20px;color:var(--text-tertiary)">暂无进度记录</div>'}</div>`;
+  document.getElementById('recall-modal-footer').innerHTML = `<button class="btn btn-default" onclick="closeRecallModal()">关闭</button>`;
+  document.getElementById('recall-modal').className = 'modal wide';
+  document.getElementById('recall-modal-overlay').classList.add('show');
+}
+
+function openRecallProgressModal(id) {
+  currentRecallAction = 'progress';
+  currentRecallId = id;
+  const row = mockData.recallData.find(r => r.id === id);
+  if (!row) return;
+  document.getElementById('recall-modal-title').textContent = '更新召回进度';
+  const stLabel = {completed:'已完成',processing:'处理中',pending:'待处理'};
+  const curStatus = stLabel[row.status] || '';
+  document.getElementById('recall-modal-body').innerHTML = `
+    <div style="padding:14px;background:var(--bg-page);border-radius:8px;margin-bottom:16px">
+      <span style="font-size:13px;color:var(--text-secondary)">${row.manufacturer} — ${row.product}</span>
+      <span style="margin-left:12px;display:inline-block;padding:2px 10px;border-radius:3px;font-size:12px;font-weight:500;color:var(--text-tertiary);background:var(--bg-white)">当前状态：${curStatus}</span>
+    </div>
+    <div class="form-group">
+      <label>处理状态<span class="required">*</span></label>
+      <select class="form-control" id="recall-progress-status">
+        <option value="pending"${row.status==='pending'?' selected':''}>待处理</option>
+        <option value="processing"${row.status==='processing'?' selected':''}>处理中</option>
+        <option value="completed"${row.status==='completed'?' selected':''}>已完成</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>更新说明<span class="required">*</span></label>
+      <textarea class="form-control" id="recall-progress-detail" placeholder="请填写本次进度更新的详细说明" style="height:100px;padding:8px 12px;resize:vertical"></textarea>
+    </div>`;
+  document.getElementById('recall-modal-footer').innerHTML = `
+    <button class="btn btn-default" onclick="closeRecallModal()">取消</button>
+    <button class="btn btn-primary" onclick="handleRecallProgressSubmit()">确认提交</button>`;
+  document.getElementById('recall-modal').className = 'modal';
+  document.getElementById('recall-modal-overlay').classList.add('show');
+}
+
+function handleRecallProgressSubmit() {
+  const newStatus = document.getElementById('recall-progress-status').value;
+  const detail = document.getElementById('recall-progress-detail').value.trim();
+  if (!detail) { showToast('请填写更新说明', 'warning'); return; }
+  const row = mockData.recallData.find(r => r.id === currentRecallId);
+  if (!row) return;
+  const stMap = {pending:'待处理',processing:'处理中',completed:'已完成'};
+  const oldStatus = stMap[row.status]||'';
+  const newStatusLabel = stMap[newStatus]||'';
+  row.status = newStatus;
+  if (!row.logs) row.logs = [];
+  row.logs.push({
+    time: new Date().toISOString().slice(0,16).replace('T',' '),
+    operator: '当前操作员',
+    action: newStatus === 'completed' ? '完成修复' : '进度更新',
+    detail: `状态变更：${oldStatus} → ${newStatusLabel}。${detail}`
+  });
+  closeRecallModal();
+  renderRecallTable();
+  renderManufacturerStats();
+  showToast('召回进度已更新', 'success');
+}
+
+// ==================== WARRANTY CARDS ====================
+function renderWarrantyCards() {
+  const data = mockData.warrantyData || [];
+  const wrap = document.getElementById('mfgr-warranty-wrap');
+  const totalEl = document.getElementById('warranty-total');
+  if (totalEl) totalEl.textContent = data.length;
+  if (!wrap) return;
+
+  if (data.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>暂无质保政策数据</p></div>`;
+    return;
+  }
+
+  const lvlLabel = {premium:'优质质保',extended:'延长质保',standard:'标准质保'};
+  const lvlColor = {premium:'#7C3AED',extended:'var(--primary)',standard:'var(--text-secondary)'};
+  const lvlBg = {premium:'#EDE4F8',extended:'var(--primary-light)',standard:'var(--bg-page)'};
+
+  let html = '';
+  data.forEach(row => {
+    html += `<div class="warranty-card">
+      <div class="warranty-header">
+        <div class="warranty-company"><span style="font-size:20px">🛡️</span> ${row.manufacturer}<span style="font-size:12px;color:var(--text-tertiary);font-weight:400;margin-left:8px">更新于 ${row.updateDate}</span></div>
+        <span style="display:inline-block;padding:3px 12px;border-radius:3px;font-size:12px;font-weight:500;color:${lvlColor[row.level]};background:${lvlBg[row.level]}">${lvlLabel[row.level]||''}</span>
+      </div>
+      <div class="warranty-body">
+        <div class="warranty-item"><div class="warranty-label">质保期限</div><div class="warranty-value">${row.period}</div></div>
+        <div class="warranty-item"><div class="warranty-label">覆盖范围</div><div class="warranty-value">${row.coverage}</div></div>
+        <div class="warranty-item"><div class="warranty-label">响应时效</div><div class="warranty-value">${row.response}</div></div>
+      </div>
+      <div class="warranty-footer">
+        <button class="btn btn-primary" onclick="openWarrantyDetailModal(${row.id})">📋 查看完整政策</button>
+        <button class="btn btn-default" onclick="openWarrantyEditModal(${row.id})">✏️ 编辑政策</button>
+      </div>
+    </div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+// ==================== WARRANTY MODAL LOGIC ====================
+let currentWarrantyAction = null;
+let currentWarrantyId = null;
+
+function closeWarrantyModal() {
+  document.getElementById('recall-modal-overlay').classList.remove('show');
+  currentWarrantyAction = null;
+  currentWarrantyId = null;
+}
+
+function openWarrantyDetailModal(id) {
+  currentWarrantyAction = 'detail';
+  currentWarrantyId = id;
+  const row = mockData.warrantyData.find(r => r.id === id);
+  if (!row) return;
+  const lvlLabel = {premium:'优质质保',extended:'延长质保',standard:'标准质保'};
+  const lvlColor = {premium:'#7C3AED',extended:'var(--primary)',standard:'var(--text-secondary)'};
+  const lvlBg = {premium:'#EDE4F8',extended:'var(--primary-light)',standard:'var(--bg-page)'};
+  document.getElementById('recall-modal-title').textContent = '质保政策详情 — ' + row.manufacturer;
+  document.getElementById('recall-modal-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:16px;background:${lvlBg[row.level]};border-radius:8px;border:1px solid ${lvlColor[row.level]}20">
+      <span style="font-size:28px">🛡️</span>
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--text-primary)">${row.manufacturer}</div>
+        <span style="display:inline-block;margin-top:4px;padding:2px 12px;border-radius:3px;font-size:12px;font-weight:500;color:${lvlColor[row.level]};background:${lvlBg[row.level]}">${lvlLabel[row.level]||''}</span>
+        <span style="font-size:12px;color:var(--text-tertiary);margin-left:8px">更新于 ${row.updateDate}</span>
+      </div>
+    </div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:12px">📋 质保细则</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px">
+      <div style="padding:14px;background:#F8FAFC;border-radius:6px">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">⏱ 质保期限</div>
+        <div style="font-weight:500;color:var(--text-primary)">${row.period}</div>
+      </div>
+      <div style="padding:14px;background:#F8FAFC;border-radius:6px">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">🔧 覆盖范围</div>
+        <div style="font-weight:500;color:var(--text-primary)">${row.coverage}</div>
+      </div>
+      <div style="padding:14px;background:#F8FAFC;border-radius:6px">
+        <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">📞 响应时效</div>
+        <div style="font-weight:500;color:var(--text-primary)">${row.response}</div>
+      </div>
+    </div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px">⚙️ 零部件覆盖明细</div>
+    <div style="padding:14px;background:var(--bg-page);border-radius:6px;margin-bottom:16px;font-size:13px;color:var(--text-secondary);line-height:1.8">
+      ${row.coverage.split('、').map(p => `<span style="display:inline-block;margin:2px 4px;padding:4px 12px;background:var(--bg-white);border:1px solid var(--border);border-radius:4px;font-size:12px">✅ ${p.trim()}</span>`).join('')}
+    </div>
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px">📝 售后时效规则</div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px">
+      <tr style="background:var(--bg-page)"><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">省内响应</td><td style="padding:8px 12px;border:1px solid var(--border);font-weight:500">${(row.response||'').split('/')[0]?.trim()||'-'}</td><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">省外响应</td><td style="padding:8px 12px;border:1px solid var(--border);font-weight:500">${(row.response||'').split('/')[1]?.trim()||'-'}</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">配件供应</td><td style="padding:8px 12px;border:1px solid var(--border)">常备件48小时内到位</td><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">技术支援</td><td style="padding:8px 12px;border:1px solid var(--border)">远程指导+上门服务</td></tr>
+      <tr style="background:var(--bg-page)"><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">维修工时</td><td style="padding:8px 12px;border:1px solid var(--border)">常规故障4小时内、重大故障24小时内</td><td style="padding:8px 12px;border:1px solid var(--border);color:var(--text-tertiary)">服务时间</td><td style="padding:8px 12px;border:1px solid var(--border)">每日 8:00-20:00（含节假日）</td></tr>
+    </table>
+    <div style="font-size:14px;font-weight:600;color:var(--text-primary);margin-bottom:10px">⚠️ 免责条款</div>
+    <div style="padding:14px;background:#FFF8F0;border:1px solid #FFE4CC;border-radius:6px;font-size:12px;color:var(--text-secondary);line-height:2">
+      1. 因用户未按操作手册使用、保养不当或擅自改装造成的损坏，不在质保范围内。<br>
+      2. 易损件（滤芯、皮带、刀片、轮胎等）按国家标准执行三包，不纳入整机质保。<br>
+      3. 因自然灾害、事故等不可抗力因素导致的设备损坏，由用户自行承担。<br>
+      4. 质保期自购机发票开具之日起计算，用户须凭发票及质保卡申请售后服务。<br>
+      5. 未在授权服务网点进行维修保养的，可能影响质保权益。
+    </div>`;
+  document.getElementById('recall-modal-footer').innerHTML = `<button class="btn btn-default" onclick="closeWarrantyModal()">关闭</button>`;
+  document.getElementById('recall-modal').className = 'modal wide';
+  document.getElementById('recall-modal-overlay').classList.add('show');
+}
+
+function openWarrantyEditModal(id) {
+  currentWarrantyAction = 'edit';
+  currentWarrantyId = id;
+  const row = mockData.warrantyData.find(r => r.id === id);
+  if (!row) return;
+  const lvlLabel = {premium:'优质质保',extended:'延长质保',standard:'标准质保'};
+  document.getElementById('recall-modal-title').textContent = '编辑质保政策 — ' + row.manufacturer;
+  const lvlOpts = Object.entries(lvlLabel).map(([v,l]) => `<option value="${v}"${row.level===v?' selected':''}>${l}</option>`).join('');
+  document.getElementById('recall-modal-body').innerHTML = `
+    <div class="form-row form-row-3">
+      <div class="form-group">
+        <label>质保等级<span class="required">*</span></label>
+        <select class="form-control" id="warranty-edit-level">${lvlOpts}</select>
+      </div>
+      <div class="form-group">
+        <label>质保期限<span class="required">*</span></label>
+        <input type="text" class="form-control" id="warranty-edit-period" value="${row.period||''}">
+      </div>
+      <div class="form-group">
+        <label>响应时效<span class="required">*</span></label>
+        <input type="text" class="form-control" id="warranty-edit-response" value="${row.response||''}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>覆盖范围<span class="required">*</span></label>
+      <input type="text" class="form-control" id="warranty-edit-coverage" value="${row.coverage||''}">
+    </div>
+    <div class="form-group">
+      <label>完整政策文本</label>
+      <textarea class="form-control" id="warranty-edit-fulltext" placeholder="可补充完整质保条款、免责声明等详细政策文本" style="height:120px;padding:8px 12px;resize:vertical">${row.fullText||''}</textarea>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);margin-top:8px">最后更新：${row.updateDate}</div>`;
+  document.getElementById('recall-modal-footer').innerHTML = `
+    <button class="btn btn-default" onclick="closeWarrantyModal()">取消</button>
+    <button class="btn btn-primary" onclick="handleWarrantySave(${id})">保存</button>`;
+  document.getElementById('recall-modal').className = 'modal';
+  document.getElementById('recall-modal-overlay').classList.add('show');
+}
+
+function handleWarrantySave(id) {
+  const row = mockData.warrantyData.find(r => r.id === id);
+  if (!row) return;
+  const level = document.getElementById('warranty-edit-level').value;
+  const period = document.getElementById('warranty-edit-period').value.trim();
+  const coverage = document.getElementById('warranty-edit-coverage').value.trim();
+  const response = document.getElementById('warranty-edit-response').value.trim();
+  const fullText = document.getElementById('warranty-edit-fulltext').value.trim();
+  if (!period || !coverage || !response) { showToast('请填写所有必填项', 'warning'); return; }
+  row.level = level;
+  row.period = period;
+  row.coverage = coverage;
+  row.response = response;
+  row.fullText = fullText;
+  row.updateDate = new Date().toISOString().slice(0,10);
+  closeWarrantyModal();
+  renderWarrantyCards();
+  showToast('质保政策已更新', 'success');
+}
+</script>
+</body>
+</html>
