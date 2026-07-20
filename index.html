@@ -507,7 +507,7 @@ textarea.form-control{height:80px;padding:8px 12px;resize:vertical}
           <span class="search-icon">🔍</span>
           <input type="text" class="search-input" placeholder="经销商法人/执照号" id="dealer-search">
         </div>
-        <div class="spacer"></div>
+       <!-- <div class="spacer"></div> -->
         <button class="btn btn-outline" onclick="handleBatchDisable('dealer')">🚫 批量禁用</button>
         <button class="btn btn-outline" onclick="handleExport('dealer')">📥 批量导出</button>
       </div>
@@ -803,7 +803,7 @@ textarea.form-control{height:80px;padding:8px 12px;resize:vertical}
 const pageConfig = {
   buyer: {
     name: '购机者管理',
-    columns: ['','购机人姓名','手机号','身份证号','所在地区','实名认证状态','名下农机数量','注册时间','状态','操作'],
+    columns: ['购机人姓名','手机号','身份证号','所在地区','实名认证状态','名下农机数量','注册时间','状态','操作'],
     searchFields: ['name','phone','idCard'],
     editTabs: [
       {key:'base',label:'基础身份信息',fields:[
@@ -855,7 +855,7 @@ const pageConfig = {
   },
   manufacturer: {
     name: '制造商管理',
-    columns: ['企业信息','旗下品牌','产品合规','鉴定覆盖率','质量指标','质保政策','认证状态','操作'],
+    columns: ['序号','企业信息','旗下品牌','产品合规','鉴定覆盖率','质量指标','质保政策','认证状态','操作'],
     searchFields: ['companyName'],
     editTabs: [
       {key:'base',label:'企业基础信息',cols:3,fields:[
