@@ -362,7 +362,7 @@ textarea.form-control{height:80px;padding:8px 12px;resize:vertical}
         <div class="stat-number green" id="stat-certified">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-title">已禁用</div>
+        <div class="stat-title">已冻结</div>
         <div class="stat-number red" id="stat-disabled">0</div>
       </div>
     </div>
@@ -383,9 +383,9 @@ textarea.form-control{height:80px;padding:8px 12px;resize:vertical}
           <input type="date" id="buyer-date-start"> 至 <input type="date" id="buyer-date-end">
         </div>
         <div class="spacer"></div>
-        <button class="btn btn-outline" onclick="handleBatchDelete('buyer')" style="color:var(--danger);border-color:var(--danger)">🗑 批量删除</button>
-        <button class="btn btn-outline" onclick="handleBatchDisable('buyer')">🚫 批量禁用</button>
-        <button class="btn btn-outline" onclick="handleExport('buyer')">📥 导出Excel</button>
+       <!-- <button class="btn btn-outline" onclick="handleBatchDelete('buyer')" style="color:var(--danger);border-color:var(--danger)">🗑 批量删除</button>-->
+        <button class="btn btn-outline" onclick="handleBatchDisable('buyer')">🚫 批量冻结</button>
+        <button class="btn btn-outline" onclick="handleExport('buyer')">📥 批量导出</button>
         <button class="btn btn-primary" onclick="openAddModal('buyer')">＋ 新增购机者</button>
       </div>
       <div class="table-wrap" id="buyer-table-wrap"></div>
@@ -820,7 +820,7 @@ const pageConfig = {
     ],
     detailTabs: [
       {key:'base',label:'基础身份信息',type:'info'},
-      {key:'machines',label:'已购农机记录',type:'table',columns:['农机名称','型号','购买日期','经销商','补贴金额','补贴状态']},
+      {key:'machines',label:'已购农机记录',type:'table',columns:['农机名称','型号','购买日期','经销商']},
       {key:'subsidy',label:'补贴申领历史',type:'table',columns:['申请编号','农机名称','申请金额','申请日期','审核状态','发放日期']},
       {key:'certFiles',label:'实名认证证书',type:'files'},
     ]
@@ -1542,10 +1542,14 @@ function renderDetailTabs(page, data) {
       t.columns.forEach(c => body += `<th>${c}</th>`);
       body += '</tr></thead><tbody>';
       // Demo rows
-      const demoRows = page === 'buyer' ? [
-        ['东方红LX1504拖拉机','LX1504','2024-06-15','南京农机销售有限公司','¥18,500','已发放'],
-        ['沃得收割机4LZ-8.0','4LZ-8.0','2024-03-20','苏州丰收农机贸易公司','¥25,000','审核中'],
-        ['久保田插秧机SPV-6CMD','SPV-6CMD','2024-09-01','南通滨江农机销售公司','¥12,000','已发放'],
+      const demoRows = page === 'buyer' && t.key === 'machines' ? [
+        ['东方红LX1504拖拉机','LX1504','2024-06-15','南京农机销售有限公司'],
+        ['沃得收割机4LZ-8.0','4LZ-8.0','2024-03-20','苏州丰收农机贸易公司'],
+        ['久保田插秧机SPV-6CMD','SPV-6CMD','2024-09-01','南通滨江农机销售公司'],
+      ] : page === 'buyer' && t.key === 'subsidy' ? [
+        ['SQ20240615001','东方红LX1504拖拉机','¥18,500','2024-06-20','已通过','2024-07-05'],
+        ['SQ20240320002','沃得收割机4LZ-8.0','¥25,000','2024-03-25','审核中','--'],
+        ['SQ20240901003','久保田插秧机SPV-6CMD','¥12,000','2024-09-05','已通过','2024-09-20'],
       ] : page === 'dealer' ? [
         ['东风LX1504拖拉机','LX1504-2024','东风农机','¥156,000','2024-05-10','已通过'],
         ['沃得收割机4LZ-8.0','4LZ-8.0-2024','沃得农机','¥218,000','2024-07-20','已通过'],
